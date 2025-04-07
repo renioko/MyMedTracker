@@ -152,46 +152,92 @@ def print_medicines(medicines: List[Medication], cursor, sql_table='Medicines') 
         display_warning(med, cursor, sql_table='Medicines')
     print('-----END-----')
 
-  
-
-
-def main(): # do usuniecia jak bedzie cli()
+@click.group()
+def cli(): # dodac nazwe sql_table - as option
+    '''MyMedTracker CLI - Manage your medicines.'''
+    pass
+@cli.command('add-medicine')
+@click.argument('name')
+@click.argument('dosage')   
+@click.argument('quantity')
+@click.argument('date')
+@click.argument('description')
+def add_medicine(name: str, dosage: str, quantity: int, date: str, description: Optional[str] = None) -> None:
+    '''Add a new medicine to the database.'''
     connection = sqlite3.connect(DB_SQL)
     cursor = connection.cursor()
-
     sql_table = 'Medicines'
+    medicine = create_medicine(cursor, name, dosage, quantity, date, description)
+    medicine.add_item(cursor, connection, sql_table)
+    connection.close()
 
-    try:
-        cursor.execute(f'SELECT id FROM {sql_table} WHERE id = 1;') # Check if the table exists
-        print('Table exists.')
+@cli.command('delete-medicine')
+@click.argument('id')
+def delete_medicine(id: int) -> None:
+    '''Delete a medicine from the database.'''
+    connection = sqlite3.connect(DB_SQL)
+    cursor = connection.cursor()
+    sql_table = 'Medicines'
+    medicine = Medication(id, '', '', 0, '', '')
+    medicine.delete_item(cursor, connection, sql_table)
+    connection.close()
 
-    except sqlite3.Error:
-        create_table(cursor, sql_table, connection)
-    print('Table is ready.')
-
-    # show_table(cursor, sql_table)
-
-    # medicine = create_medicine(cursor, 'Pulmicord400', '400mg', 50, '2023-12-31', 'Take 2 puffs daily ')
-    # medicine.add_item(cursor, connection, sql_table)
-
-    # medicine2 = Medication(2, '', '', 0, '', '')
-    # medicine3 = Medication(3, '', '', 0, '', '')
-
-
-    # medicine2.delete_item(cursor, connection, sql_table)
-    # medicine3.delete_item(cursor, connection, sql_table)
-
+@cli.command('show-medicines')
+def show_medicines() -> None:
+    '''Show all medicines in the database.'''
+    connection = sqlite3.connect(DB_SQL)
+    cursor = connection.cursor()
+    sql_table = 'Medicines'
     data = load_table(cursor, sql_table)
     medicines = []
     for med in data:
         med = Medication(*med)
         medicines.append(med)
-
-    if medicines:
-        print_medicines(medicines, cursor, sql_table)
-    else:
-        print('No medicines found.')
+    print_medicines(medicines, cursor, sql_table)
     connection.close()
+
+@cli.command('update-medicine')
+@click.argument('id')   
+@click.argument('name')
+@click.argument('dosage')   
+@click.argument('quantity')
+@click.argument('date')
+@click.argument('description')
+def update_medicine(id: int, name: str, dosage: str, quantity: int, date: str, description: Optional[str] = None) -> None:
+    '''Update a medicine in the database.'''
+    connection = sqlite3.connect(DB_SQL)
+    cursor = connection.cursor()
+    sql_table = 'Medicines'
+    medicine = Medication(id, name, dosage, quantity, date, description)
+    cursor.execute(f'UPDATE {sql_table} SET name = ?, dosage = ?, quantity = ?, date = ?, description = ? WHERE id = ?;',
+                   (medicine.name, medicine.dosage, medicine.quantity, medicine.date, medicine.description, id))    
+
+@cli.command('load-or-init')
+def load_or_init() -> None:
+    '''Load or initialize the database.'''
+    connection = sqlite3.connect(DB_SQL)
+    cursor = connection.cursor()
+    sql_table = 'Medicines'
+    try:
+        cursor.execute(f'SELECT id FROM {sql_table} WHERE id = 1;') # Check if the table exists
+        print('Table exists.')
+    except sqlite3.Error:
+        create_table(cursor, sql_table, connection)
+    print('Table is ready.')
+    connection.close()
+
+
+#     # show_table(cursor, sql_table)
+
+#     # medicine = create_medicine(cursor, 'Pulmicord400', '400mg', 50, '2023-12-31', 'Take 2 puffs daily ')
+#     # medicine.add_item(cursor, connection, sql_table)
+
+#     # medicine2 = Medication(2, '', '', 0, '', '')
+#     # medicine3 = Medication(3, '', '', 0, '', '')
+
+
+#     # medicine2.delete_item(cursor, connection, sql_table)
+#     # medicine3.delete_item(cursor, connection, sql_table)
 
 #     # Example usage:
 #     # medicine = create_medicine(cursor, 'Aspirin', '500mg', 20, '2023-12-31', 'Pain reliever')
@@ -201,4 +247,4 @@ def main(): # do usuniecia jak bedzie cli()
 #     # print_medicines(medicines, cursor, sql_table)     
 
 if __name__ == '__main__':
-    main()
+    cli()
