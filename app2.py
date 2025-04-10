@@ -8,6 +8,8 @@ import click
 import sys
 
 DB_SQL = 'MyMedTracker\\MEDICINES.db'
+\
+# dodac opcjonalnosc do click - mozna podac inna tablice jako opcjonalny dodatek, jesli nie to default 'Medicines'
 
 @dataclass
 class Medication:
@@ -15,13 +17,13 @@ class Medication:
     name: str
     dosage: str
     quantity: int
-    date: datetime.date # datetime.strptime('%Y-%m-%d')  # in 'YYYY-MM-DD' format
+    date: Optional[datetime.date] # datetime.strptime('%Y-%m-%d')  # in 'YYYY-MM-DD' format
     description: Optional[str] = None
 
     def __post_init__(self):
         if self.dosage is None:
             self.dosage = ''
-        if self.quantity < 0:
+        if int(self.quantity) < 0:
             raise ValueError('ERROR! You entered a negative number.')
         if self.date:
             self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
@@ -224,13 +226,16 @@ def load_or_init() -> None:
     except sqlite3.Error:
         create_table(cursor, sql_table, connection)
     print('Table is ready.')
+
+    
+    medicine = create_medicine(cursor, 'Pulmicord400', '400mg', 50, '2023-12-31', 'Take 2 puffs daily ')
+    medicine.add_item(cursor, connection, sql_table)
     connection.close()
 
 
 #     # show_table(cursor, sql_table)
 
-#     # medicine = create_medicine(cursor, 'Pulmicord400', '400mg', 50, '2023-12-31', 'Take 2 puffs daily ')
-#     # medicine.add_item(cursor, connection, sql_table)
+    # medicine.add_item(cursor, connection, sql_table)
 
 #     # medicine2 = Medication(2, '', '', 0, '', '')
 #     # medicine3 = Medication(3, '', '', 0, '', '')
