@@ -98,13 +98,15 @@ def calculate_days_left(medicine: Medication, cursor, sql_table='Medicines') -> 
     # Assuming date is in 'YYYY-MM-DD' format
     date_format = '%Y-%m-%d'
     date_obj = datetime.strptime(date, date_format)
-    days_left = (datetime.now() - date_obj).days
+    days_difference = (datetime.now() - date_obj).days
+    days_left = medicine.quantity - days_difference
+    print(f'Days left for {medicine.name}: {days_left}')
     return days_left
 
 def display_warning(medicine: Medication, cursor, sql_table='Medicines' ) -> None:
     days_left = calculate_days_left(medicine, cursor, sql_table='Medicines')
     if days_left < 7:
-        print(f'Warning! Medicine {medicine.name} is expired by {datetime.now().date()-days_left} days.')
+        print(f'Warning! Medicine {medicine.name} is expired by {days_left} days.')
 
 # not in use currently
 def show_table(cursor, sql_table='Medicines') -> None:
