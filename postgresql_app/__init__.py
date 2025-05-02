@@ -16,18 +16,9 @@ OBJECTS = {
         1: 'Medicine',
         2: 'Patient',
         3: 'Prescription',
-        4: 'Appointment',
-        5: 'EXIT'
+        4: 'EXIT'
 }
 
-# OPTIONS = {
-#             1: f'Add new ',
-#             2: f'Delete ',
-#             3: f'Update ',
-#             4: f'View all ',
-#             5: f'Assign ',
-#             6: 'Exit'
-#         }
 @dataclass
 class Menu:
     def __init__(self, choice, option, function) -> None:
@@ -43,8 +34,8 @@ class Menu:
             3: f'Update {OBJECTS[self.choice]}',
             4: f'View all {OBJECTS[self.choice]}',
             5: f'Assign {OBJECTS[self.choice]}',
-            6: 'Exit',
-            7: 'View patient medicineslist'
+            6: 'View Patient Medicines list',
+            7: 'Exit'
         }
 
         self.function = {
@@ -64,11 +55,11 @@ class Menu:
     def choose_menu_object(self) -> int | None:    # zwraca mi liczbe, ktora odpowiada obiektowi, jaki bedzie obrabiany
         while True:
             choice = input('Enter your choice: ')
-            if choice.isdigit() and int(choice) in range(1, 5):
+            if choice.isdigit() and int(choice) in range(1, 4):
                 print('You selected object:', OBJECTS[int(choice)])
-                print('choice:', choice)
+                print('You chose:', OBJECTS[int(choice)])
                 return int(choice)
-            elif choice == '5':
+            elif choice == '4':
                 print('Exiting the program. Goodbye!')
                 sys.exit(1)
             else:
@@ -82,21 +73,19 @@ class Menu:
     def choose_option(self) -> int | None:
         while True:
             option = input('Choose an action: ')
-            if option.isdigit() and int(option) in range(1, 6):
+            if option.isdigit() and int(option) in range(1, 7):
                 print('You selected:', self.option[int(option)])
                 return option
-            elif option == '6':
-                print('Exiting the program. Goodbye!')
-                sys.exit(1)
             elif option == '7':
-                print('You selected:', self.option[int(option)])
-                return option                
+                print('Exiting the program. Goodbye!')
+                sys.exit(1)               
             else:
                 print('Invalid choice. Please try again.')
 
     def get_function(self, option) -> str | None:
         if option in self.function:
-            return self.function[int(option)]() #czy to zadziała?
+            print(self.function[int(option)])
+            # return self.function[int(option)]() #czy to zadziała?
         else:
             sys.exit(1)
 
@@ -186,23 +175,20 @@ class Patient_Medicines_View:
         pass
 
 
-def load_patient_data(cursor, patient_id) -> Patient_Medicines_View | None:
-    cursor.execute('''
-    SELECT * FROM view_patient_medicines 
-        WHERE pat_id = %s ;''', (patient_id,))
-    records = cursor.fetchall()
+def load_patient_data(cursor, patient_id = None) -> Patient_Medicines_View | None:
+    if patient_id:
+        cursor.execute('''
+        SELECT * FROM view_patient_medicines 
+            WHERE pat_id = %s ;''', (patient_id,))
+        records = cursor.fetchall()
+    else:
+        cursor.execute('''
+        SELECT * FROM view_patient_medicines;''')
+        records = cursor.fetchall()
     if records:
         return [Patient_Medicines_View(*record) for record in records]
     else:
         print('Record not found.')
-        return None
-
-def load_all_data(cursor) -> Patient_Medicines_View | None:
-    records = select_patients_medicines_from_view(cursor)
-    if records:
-        return [Patient_Medicines_View(*record) for record in records]
-    else:
-        print('Records not found.')
         return None
 
 def print_patient_medicines_view(data: List[Patient_Medicines_View]) -> None:
@@ -276,26 +262,26 @@ def select_patients_medicines_from_view(cursor: Any) -> None:
 """)
     #     WHERE first_name = 'Anna'
     records = cursor.fetchall()
-    for record in records:
-        print(record)
-
-
+    if records:
+        for record in records:
+            print(record)
+    else:
+        print('No records found.')
 
 def main() -> None:
-    # menu = Menu(0, {}, {})
-    # menu.display_menu()
-    # choice = menu.choose_menu_object()
-    # menu.choice = choice  # Set the choice in the Menu instance
-    # menu.__post_init__()  # Initialize options and functions based on the choice
-    # menu.display_options()
-    # option = menu.choose_option()
-    # function = menu.get_function(option)
-    # print(f'You selected action: {function}')
+    menu = Menu(0, {}, {})
+    menu.display_menu()
+    choice = menu.choose_menu_object()
+    menu.choice = choice  # Set the choice in the Menu instance
+    menu.__post_init__()  # Initialize options and functions based on the choice
+    menu.display_options()
+    option = menu.choose_option()
+
 
     connection, cursor = connect_to_database()
     # select_all_from_table(cursor, 'view_patient_medicines', 'pat_id')
     print('----------------------------------')
-    data = load_patient_data(cursor, 1)
+    data = load_patient_data(cursor, 6)
     print_patient_medicines_view(data)
 
     # select_patients_medicines_from_view(cursor)
