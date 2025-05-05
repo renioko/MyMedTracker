@@ -125,6 +125,10 @@ class Medicine:
         medicines.append(self)
         print('Medicine added.')
 
+class MedicineDB:
+    def get_medicine_details():
+        pass
+
 @ dataclass
 class Patient:
     pat_id: int
@@ -132,9 +136,74 @@ class Patient:
     last_name: str
     email: str
 
+    def __str__(self):
+        return (f'{self.pat_id:^4} {self.first_name:12} {self.last_name:25}, {self.email}')
+
+
     def add_patient(self, patients: list) -> None:
         patients.append(self)
         print('Patient added.')
+
+class PatientDB:
+
+    @classmethod
+    def get_patient_details(cls) -> tuple[str, str]:
+        choice = input('You want to load patient data. Do you know patient id? Y/N')
+        if choice.lower() == 'y':
+            try:
+                pat_id = int(input('Enter patiend id: '))
+            except TypeError:
+                print('You entered incorrect data. Try again')
+                return cls.load_patient_details() # recursion / rekurencja
+            return ('pat_id', str(pat_id))
+        elif choice.lower() == 'n':
+            choice_2 = input('Do you know patient email? Y/N')
+            if choice_2.lower() == 'y':
+                pat_email = input('Enter patient email.')
+                if not '@' in pat_email:
+                    print('Email must contain @ character.')
+                    return cls.load_patient_details()
+                return ('email', pat_email)
+            else:
+                print('You can not load patient details without id or email.')
+                sys.exit()
+        else:
+            print('Incorrect answer. Try again.')
+            cls.load_patient_details()
+            
+    @classmethod
+    def load_patient_details(cls, cursor) -> list[Patient]:
+        column, value = cls.get_patient_details()
+        allowed_columns = ['pat_id', 'email']
+        if column not in allowed_columns:
+            raise ValueError('Indalid action.')
+        querry = f'''
+    SELECT pat_id, first_name, last_name, email
+    FROM new_patients WHERE {column} = %s'''
+        
+        try:
+            cursor.execute(querry, (value,))
+        except psycopg2.Error as e:
+            print(f'Error occured: {e}.')
+            return []
+        patient_data = cursor.fetchall()
+        return [str(Patient(*row)) for row in patient_data]
+    
+    @classmethod
+    def print_patients(cls, patients) -> None:
+        for patient in patients:
+            print('--PATIENTS---')
+            print('-id- -first_name- -last_name-------------- --email-------------')
+            print(patient)
+    
+    # zwraca:You want to load patient data. Do you know patient id? Y/Ny
+    # Enter patiend id: 1
+    # <generator object PatientDB.load_patient_details.<locals>.<genexpr> at 0x000002A97FC16180>
+
+
+
+            
+            
 
 @ dataclass
 class Prescription:
@@ -175,7 +244,7 @@ class Patient_Medicines_View:
         pass
 
 
-def load_patient_data(cursor, patient_id = None) -> Patient_Medicines_View | None:
+def load_patient_data(cursor, patient_id = None) -> list[Patient_Medicines_View] | None:
     if patient_id:
         cursor.execute('''
         SELECT * FROM view_patient_medicines 
@@ -276,13 +345,17 @@ def main() -> None:
     menu.__post_init__()  # Initialize options and functions based on the choice
     menu.display_options()
     option = menu.choose_option()
-
+    print(option)
 
     connection, cursor = connect_to_database()
     # select_all_from_table(cursor, 'view_patient_medicines', 'pat_id')
     print('----------------------------------')
     data = load_patient_data(cursor, 6)
     print_patient_medicines_view(data)
+
+    print('-------------------')
+    patients = PatientDB().load_patient_details(cursor)
+    PatientDB.print_patients(patients)
 
     # select_patients_medicines_from_view(cursor)
     cursor.close()
