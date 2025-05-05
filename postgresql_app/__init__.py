@@ -256,6 +256,15 @@ class PatientDB:
             print(f'Error ocurred while changing patient details: {e}')
 
     @classmethod
+    def get_patient_id_to_delete() -> int:
+        try:
+            pat_id = int(input('Enter patient id to delete this patient: '))
+            return pat_id
+        except ValueError:
+            print('You entered incorrect id.')
+
+
+    @classmethod
     def print_patients(cls, patients) -> None:
         if patients:
             for patient in patients:
