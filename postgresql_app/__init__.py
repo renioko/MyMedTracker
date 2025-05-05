@@ -270,6 +270,27 @@ class PatientDB:
 
 
     @classmethod
+    def delete_patient(cls, connection, cursor, pat_id: int = None) -> None:
+        if not pat_id:
+            pat_id = cls.get_patient_id_to_delete()
+        validation = input(f'Are you sure you want to delete patient with id {pat_id}? Y/N')
+        if validation.lower() == 'y':
+            db_password = config.DB_PASSWORD
+            input_password = input('Enter database password to delete: ')
+            if db_password == input_password:
+                cursor.execute('''
+        DELETE FROM new_patients WHERE pat_id = %s
+        ''', pat_id)
+                print('Patient deleted.')
+            else:
+                print('Incorrect password. Try again.')
+                return cls.delete_patient(cls, connection, cursor, pat_id)
+        else:
+            print('Deleting aborted.')
+            sys.exit()
+
+
+    @classmethod
     def print_patients(cls, patients) -> None:
         if patients:
             for patient in patients:
