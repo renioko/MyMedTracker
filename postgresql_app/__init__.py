@@ -1,4 +1,6 @@
+from __future__ import annotations
 from collections import defaultdict
+
 from dataclasses import dataclass
 import sys
 from typing import Optional, List, Any
@@ -6,7 +8,7 @@ from datetime import datetime, date
 from time import strftime, strptime
 import psycopg2
 import config
-import uuid
+
 
 '''
 First user will choose an object on which he wants to perform an operation.
@@ -126,7 +128,11 @@ class Medicine:
         print('Medicine added.')
 
 class MedicineDB:
-    def get_medicine_details():
+    def get_medicine_details(cls):
+        pass
+    def load_medicines(cls, cursor) -> list[Medicine]:
+        pass
+    def print_medicines(medicines) -> None:
         pass
 
 @ dataclass
@@ -172,7 +178,7 @@ class PatientDB:
             cls.load_patient_details()
             
     @classmethod
-    def load_patient_details(cls, cursor) -> list[Patient]:
+    def load_patients_details(cls, cursor) -> list[Patient]:
         column, value = cls.get_patient_details()
         allowed_columns = ['pat_id', 'email']
         if column not in allowed_columns:
@@ -190,20 +196,26 @@ class PatientDB:
         return [str(Patient(*row)) for row in patient_data]
     
     @classmethod
+    def add_patient_to_database(cls, patient_details: tuple[str, str, str]) -> None:
+        connection, cursor = connect_to_database()
+        try:
+            cursor.execute('''
+            INSERT INTO new_patients (first_name, last_name, email)
+            VALUES (%s, %s, %s)
+            ''', patient_details            
+            )
+            connection.commit()
+            print('Patient added.')
+        except psycopg2.Error as e:
+            print(f'Error occured while adding new patient: {e}.')
+
+    @classmethod
     def print_patients(cls, patients) -> None:
         for patient in patients:
             print('--PATIENTS---')
             print('-id- -first_name- -last_name-------------- --email-------------')
             print(patient)
     
-    # zwraca:You want to load patient data. Do you know patient id? Y/Ny
-    # Enter patiend id: 1
-    # <generator object PatientDB.load_patient_details.<locals>.<genexpr> at 0x000002A97FC16180>
-
-
-
-            
-            
 
 @ dataclass
 class Prescription:
@@ -243,36 +255,37 @@ class Patient_Medicines_View:
         # Możesz tu dodać logikę po inicjalizacji, np. formatowanie daty
         pass
 
-
-def load_patient_data(cursor, patient_id = None) -> list[Patient_Medicines_View] | None:
-    if patient_id:
-        cursor.execute('''
-        SELECT * FROM view_patient_medicines 
-            WHERE pat_id = %s ;''', (patient_id,))
-        records = cursor.fetchall()
-    else:
-        cursor.execute('''
-        SELECT * FROM view_patient_medicines;''')
-        records = cursor.fetchall()
-    if records:
-        return [Patient_Medicines_View(*record) for record in records]
-    else:
-        print('Record not found.')
-        return None
-
-def print_patient_medicines_view(data: List[Patient_Medicines_View]) -> None:
-    grouped = defaultdict(list)
-    for record in data:
-        key = (record.pat_id, record.first_name, record.last_name)
-        grouped[key].append((record.med_id, record.med_name, record.last_issued))
-    print('PATIENTS MEDICINES VIEW:')
-    for (pat_id, first_name, last_name), meds in grouped.items():
-        print('-pat_id- -first_name- -last_name- ')
-        print(f'{pat_id :^8} {first_name :12} {last_name}')
-        print('-med_id- -medicine_name----------- -last_issued- ')
-        for med_id, med_name, last_issued in meds:
-            print(f'{med_id :^8} {med_name :25} {last_issued}')
-        print('---')
+    @classmethod
+    def load_patient_medicines(cls, cursor, patient_id = None) -> list[Patient_Medicines_View] | None:
+        if patient_id:
+            cursor.execute('''
+            SELECT * FROM view_patient_medicines 
+                WHERE pat_id = %s ;''', (patient_id,))
+            records = cursor.fetchall()
+        else:
+            cursor.execute('''
+            SELECT * FROM view_patient_medicines;''')
+            records = cursor.fetchall()
+        if records:
+            return [Patient_Medicines_View(*record) for record in records]
+        else:
+            print('Record not found.')
+            return None
+        
+    @classmethod
+    def print_patient_medicines_view(cls, data: List[Patient_Medicines_View]) -> None:
+        grouped = defaultdict(list)
+        for record in data:
+            key = (record.pat_id, record.first_name, record.last_name)
+            grouped[key].append((record.med_id, record.med_name, record.last_issued))
+        print('PATIENTS MEDICINES VIEW:')
+        for (pat_id, first_name, last_name), meds in grouped.items():
+            print('-pat_id- -first_name- -last_name- ')
+            print(f'{pat_id :^8} {first_name :12} {last_name}')
+            print('-med_id- -medicine_name----------- -last_issued- ')
+            for med_id, med_name, last_issued in meds:
+                print(f'{med_id :^8} {med_name :25} {last_issued}')
+            print('---')
 
 
 # mozna uzyc klasy do tego, ale czy warto?
@@ -315,15 +328,15 @@ def connect_to_database() -> Any:
         sys.exit(1)
 
 
-def select_all_from_table(cursor: Any, table_name: str, id_name: str) -> None:
+def select_all_from_table_by_id(cursor: Any, table_name: str, id_name: str) -> None:
     """Select all records from a given table"""
     cursor.execute(f"SELECT * FROM {table_name} ORDER BY {id_name} ASC;")
     records = cursor.fetchall()
     for record in records:
         print(record)
 
-def select_patients_medicines_from_view(cursor: Any) -> None:
-    """Select all records from the view"""
+def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
+    """Select all records from the view and prints records as in thhe table - as tuples"""
     cursor.execute("""
     SELECT pat_id, first_name, last_name, med_id, medicine_name, last_issued
     FROM view_patient_medicines
@@ -348,16 +361,18 @@ def main() -> None:
     print(option)
 
     connection, cursor = connect_to_database()
-    # select_all_from_table(cursor, 'view_patient_medicines', 'pat_id')
-    print('----------------------------------')
-    data = load_patient_data(cursor, 6)
-    print_patient_medicines_view(data)
+    # select_all_from_table_by_id(cursor, 'view_patient_medicines', 'pat_id')
+    # print('load_or_print_patients_medicines_from_view:')
+    # load_or_print_patients_medicines_from_view(cursor)
+    print('---*---------*-----------*---------*--')
+    data = Patient_Medicines_View.load_patient_medicines(cursor, 6)
+    Patient_Medicines_View.print_patient_medicines_view(data)
 
     print('-------------------')
-    patients = PatientDB().load_patient_details(cursor)
+    patients = PatientDB().load_patients_details(cursor)
     PatientDB.print_patients(patients)
 
-    # select_patients_medicines_from_view(cursor)
+
     cursor.close()
     connection.close()
 # ++++++++++++++++++++++++++++++
