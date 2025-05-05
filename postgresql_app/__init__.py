@@ -236,7 +236,7 @@ class PatientDB:
                 
     @classmethod
     def alter_patient_details_in_db(cls, connection, cursor, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
-        if pat_id | column_to_change | new_details == None:
+        if pat_id is None or column_to_change is None or  new_details == None:
             pat_id, column_to_change, new_details = cls.get_patient_update_input()
         allowed_columns = ['first_name', 'last_name', 'email']
         if column_to_change not in allowed_columns:
@@ -246,11 +246,10 @@ class PatientDB:
         
         querry = f'''
     UPDATE new_patients SET {column_to_change} = %s
-    WHERE pat_id = {pat_id}
+    WHERE pat_id = %s
     '''
         try:
-            cursor.execute(querry, (pat_id, new_details
-            ))
+            cursor.execute(querry, (new_details, pat_id))
             connection.commit()
             print('Patient detail changed.')
         except psycopg2.Error as e:
