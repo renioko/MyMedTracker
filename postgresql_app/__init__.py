@@ -221,6 +221,7 @@ class PatientDB:
 
     @classmethod
     def get_patient_update_input(cls, ) -> tuple:
+
         try:
             pat_id = int(input('Enter patients id: '))
         except ValueError:
@@ -232,7 +233,11 @@ class PatientDB:
             print('Invalid column name. Try again.')
             return cls.get_patient_update_input()
         new_details = input('Enter a new value: ')
+        # q = input('If you want to quit press q')
+        # if q.lower == q:
+        #     sys.exit()
         return (pat_id, column_to_change, new_details)
+    
                 
     @classmethod
     def alter_patient_details_in_db(cls, connection, cursor, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
