@@ -153,14 +153,14 @@ class Patient:
 class PatientDB:
 
     @classmethod
-    def get_patient_details(cls) -> tuple[str, str]:
+    def get_patient_details_to_load(cls) -> tuple[str, str]:
         choice = input('You want to load patient data. Do you know patient id? Y/N')
         if choice.lower() == 'y':
             try:
-                pat_id = int(input('Enter patiend id: '))
+                pat_id = int(input('Enter patient id: '))
             except TypeError:
                 print('You entered incorrect data. Try again')
-                return cls.load_patient_details() # recursion / rekurencja
+                return cls.get_patient_details_to_load() # recursion / rekurencja
             return ('pat_id', str(pat_id))
         elif choice.lower() == 'n':
             choice_2 = input('Do you know patient email? Y/N')
@@ -168,18 +168,18 @@ class PatientDB:
                 pat_email = input('Enter patient email.')
                 if not '@' in pat_email:
                     print('Email must contain @ character.')
-                    return cls.load_patient_details()
+                    return cls.get_patient_details_to_load()
                 return ('email', pat_email)
             else:
                 print('You can not load patient details without id or email.')
                 sys.exit()
         else:
             print('Incorrect answer. Try again.')
-            cls.load_patient_details()
+            return cls.get_patient_details_to_load()
             
     @classmethod
     def load_patients_details(cls, cursor) -> list[Patient]:
-        column, value = cls.get_patient_details()
+        column, value = cls.get_patient_details_to_load()
         allowed_columns = ['pat_id', 'email']
         if column not in allowed_columns:
             raise ValueError('Indalid action.')
@@ -193,11 +193,21 @@ class PatientDB:
             print(f'Error occured: {e}.')
             return []
         patient_data = cursor.fetchall()
-        return [str(Patient(*row)) for row in patient_data]
+        return [Patient(*row) for row in patient_data] # usunelam str
     
     @classmethod
-    def add_patient_to_database(cls, patient_details: tuple[str, str, str]) -> None:
+    def get_details_to_add_patient(cls) -> tuple[str, str, str]:
+        first_name = input('Enter patients first name: ')
+        last_name = input('Enter patients last name: ')
+        email = input('Enter patients email: ')
+        # validate email
+        return (first_name, last_name, email)
+
+    @classmethod
+    def add_patient_to_database(cls, patient_details: tuple[str, str, str] = None) -> None:
         connection, cursor = connect_to_database()
+        if not patient_details:
+            patient_details = cls.get_details_to_add_patient()
         try:
             cursor.execute('''
             INSERT INTO new_patients (first_name, last_name, email)
@@ -210,11 +220,51 @@ class PatientDB:
             print(f'Error occured while adding new patient: {e}.')
 
     @classmethod
+    def get_patient_update_input(cls, ) -> tuple:
+        try:
+            pat_id = int(input('Enter patients id: '))
+        except ValueError:
+            print('Id must be a number. Try again.')
+            return cls.get_patient_update_input()
+        allowed_columns = ['first_name', 'last_name', 'email']
+        column_to_change = input('What column you want to change? Enter "first_name", "last_name" or "email": ')
+        if column_to_change not in allowed_columns:
+            print('Invalid column name. Try again.')
+            return cls.get_patient_update_input()
+        new_details = input('Enter a new value: ')
+        return (pat_id, column_to_change, new_details)
+                
+    @classmethod
+    def alter_patient_details_in_db(cls, connection, cursor, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
+        if pat_id | column_to_change | new_details == None:
+            pat_id, column_to_change, new_details = cls.get_patient_update_input()
+        allowed_columns = ['first_name', 'last_name', 'email']
+        if column_to_change not in allowed_columns:
+            raise ValueError('Invalid column name.')
+        if not isinstance(pat_id, int):
+            raise ValueError('Invalid id.')
+        
+        querry = f'''
+    UPDATE new_patients SET {column_to_change} = %s
+    WHERE pat_id = {pat_id}
+    '''
+        try:
+            cursor.execute(querry, (pat_id, new_details
+            ))
+            connection.commit()
+            print('Patient detail changed.')
+        except psycopg2.Error as e:
+            print(f'Error ocurred while changing patient details: {e}')
+
+    @classmethod
     def print_patients(cls, patients) -> None:
-        for patient in patients:
-            print('--PATIENTS---')
-            print('-id- -first_name- -last_name-------------- --email-------------')
-            print(patient)
+        if patients:
+            for patient in patients:
+                print('--PATIENTS---')
+                print('-id- -first_name- -last_name-------------- --email-------------')
+                print(patient)
+        else:
+            print('List of patients is empty.')
     
 
 @ dataclass
@@ -372,6 +422,7 @@ def main() -> None:
     patients = PatientDB().load_patients_details(cursor)
     PatientDB.print_patients(patients)
 
+    PatientDB.add_patient_to_database(patient_details=('Szczadowazy', 'Sikadomiski', 'szczadowazysikadomiski@gmail.com'))
 
     cursor.close()
     connection.close()
