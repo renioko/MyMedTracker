@@ -9,6 +9,7 @@ from datetime import datetime, date
 from time import strftime, strptime
 import psycopg2
 import config
+import inspect
 
 
 '''
@@ -362,15 +363,29 @@ class PatientMenu(PatientDB, Menu):
         method = getattr(self, method_name, None)
         if method:
             connection, cursor = connect_to_database()
+            sig = inspect.signature(method)
+            num_params = len(sig.parameters)
             try:
-                method()
-            except TypeError:
-                try:
-                    method(cursor,)
-                except TypeError:
+                if num_params == 1:
+                    method() #(self)
+                elif num_params == 2: #(self, cursor)
+                    method(cursor)
+                elif num_params == 3: #(self, connection, cursor)
                     method(connection, cursor)
-                except Error as e:
-                    print(f'Error: {e}')
+                else:
+                    print('Unsupported method')
+            except Exception as e:
+                print(f'error during method execution: {e}')
+
+            # try:
+            #     method()
+            # except TypeError:
+            #     try:
+            #         method(cursor,)
+            #     except TypeError:
+            #         method(connection, cursor)
+            #     except Error as e:
+            #         print(f'Error: {e}')
 
             # # Jeśli metoda wymaga połączenia z bazą danych:
             # if ('connection', 'cursor') in method.__code__.co_varnames:
@@ -435,18 +450,35 @@ class Patient_Medicines_View:
 
     @classmethod
     def load_patient_medicines(cls, cursor, patient_id = None) -> list[Patient_Medicines_View] | None:
-        '''this funktion will print one patients view if id given. all patients otherwise 🚩'''
-        if patient_id:
-            cursor.execute('''
+        '''this funktion will print one patients view if id given. otherwise will ask for id or email'''
+        querry = '''
             SELECT * FROM view_patient_medicines 
-                WHERE pat_id = %s ;''', (patient_id,))
-            records = cursor.fetchall()
-        else:
-            cursor.execute('''
-            SELECT * FROM view_patient_medicines;''')
-            records = cursor.fetchall()
+                WHERE patient_id = %s'''
+        if patient_id:
+            try:
+                cursor.execute(querry, (patient_id,))
+                records = cursor.fetchall()
+            except psycopg2.Error as e:
+                print(f'Error occured: {e}.')
+                return None
+
+        else: 
+            column, value = PatientDB.get_patient_details_to_load()
+            allowed_columns = ['pat_id', 'email']
+            querry = f'''
+            SELECT * FROM view_patient_medicines 
+                WHERE {column} = %s'''
+            if column not in allowed_columns:
+                raise ValueError('Indalid action.')
+            try:
+                cursor.execute(querry, (value,))
+                records = cursor.fetchall()
+            except psycopg2.Error as e:
+                print(f'Error ocurred: {e}')
+                return None
+          
         if records:
-            return [Patient_Medicines_View(*record) for record in records]
+                return [Patient_Medicines_View(*record) for record in records]
         else:
             print('Record not found.')
             return None
