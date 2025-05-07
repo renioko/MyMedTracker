@@ -298,7 +298,7 @@ class PatientDB:
         except psycopg2.Error as e:
             print(f'Error ocurred while changing patient details: {e}')
 
-    @classmethod
+    @staticmethod
     def get_patient_id_to_delete() -> int:
         try:
             pat_id = int(input('Enter patient id to delete this patient: '))
@@ -311,27 +311,35 @@ class PatientDB:
     def delete_patient(cls, connection, cursor, pat_id: int = None) -> None:
         if not pat_id:
             pat_id = cls.get_patient_id_to_delete()
-        validation = input(f'Are you sure you want to delete patient with id {pat_id}? Y/N')
+
+        # 📒 SPRAWDZENIE: Czy pacjent istnieje?
+        cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
+        patient = cursor.fetchone()
+        if not patient:
+            print(f'Patient with ID {pat_id} does not exist.')
+            return  # kończymy funkcję, nic nie robimy dalej
+
+        # 🧨 Potwierdzenie usunięcia
+        validation = input(f'Are you sure you want to delete patient with id {pat_id}? Y/N ')
         if validation.lower() == 'y':
             db_password = config.DB_PASSWORD
             input_password = input('Enter database password to delete: ')
             if db_password == input_password:
-                cursor.execute('''
-        DELETE FROM new_patients WHERE pat_id = %s
-        ''', pat_id)
+                cursor.execute('DELETE FROM new_patients WHERE pat_id = %s', (pat_id,))
+                connection.commit()
                 print('Patient deleted.')
             else:
                 print('Incorrect password. Try again.')
-                return cls.delete_patient(cls, connection, cursor, pat_id)
+                return cls.delete_patient(connection, cursor, pat_id)
         else:
             print('Deleting aborted.')
             sys.exit()
 
 
     @classmethod
-    def print_patients(cls) -> None:
+    def print_patient(cls) -> None:
         connection, cursor = connect_to_database()
-        patients = cls.load_patients_details(cls, cursor)
+        patients = cls.load_patients_details(cursor)
         if patients:
             for patient in patients:
                 print('--PATIENTS---')
@@ -347,7 +355,7 @@ class PatientMenu(PatientDB, Menu):
             1: 'add_patient_to_database',
             2: 'delete_patient',
             3: 'alter_patient_details_in_db',
-            4: 'print_patients',
+            4: 'print_patient',
             5: 'assign', # not working
             6: 'exit'
 
@@ -398,11 +406,12 @@ class Patient_Medicines_View:
     last_issued: datetime.date
 
     def __post_init__(self):
-        # Możesz tu dodać logikę po inicjalizacji, np. formatowanie daty
+        # Tu mozna by dodac jakas logikę po inicjalizacji, np. formatowanie daty
         pass
 
     @classmethod
     def load_patient_medicines(cls, cursor, patient_id = None) -> list[Patient_Medicines_View] | None:
+        '''this funktion will print one patients view if id given. all patients otherwise 🚩'''
         if patient_id:
             cursor.execute('''
             SELECT * FROM view_patient_medicines 
@@ -424,7 +433,7 @@ class Patient_Medicines_View:
         for record in data:
             key = (record.pat_id, record.first_name, record.last_name)
             grouped[key].append((record.med_id, record.med_name, record.last_issued))
-        print('PATIENTS MEDICINES VIEW:')
+        print("PATIENT'S MEDICINES VIEW:")
         for (pat_id, first_name, last_name), meds in grouped.items():
             print('-pat_id- -first_name- -last_name- ')
             print(f'{pat_id :^8} {first_name :12} {last_name}')
@@ -473,8 +482,8 @@ def connect_to_database() -> Any:
         print(f"Error connecting to the database: {e}")
         sys.exit(1)
 
-
-def select_all_from_table_by_id(cursor: Any, table_name: str, id_name: str) -> None:
+# funkcje dla administratora:
+def select_all_from_table_ordered_by_id(cursor: Any, table_name: str, id_name: str) -> None:
     """Select all records from a given table"""
     cursor.execute(f"SELECT * FROM {table_name} ORDER BY {id_name} ASC;")
     records = cursor.fetchall()
@@ -497,35 +506,36 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
         print('No records found.')
 
 def main() -> None:
-    menu = Menu(0, {}, {})
-    menu.display_menu()
-    menu_object = menu.choose_menu_object()
-    menu.choice = menu_object
+#     menu = Menu(0, {}, {})
+#     menu.display_menu()
+#     menu_object = menu.choose_menu_object()
+#     menu.choice = menu_object
+    # ✅ 
+# # od teraz powinna dzialac podklada menu
 
-# od teraz powinna dzialac podklada menu
-
-
-
-    menu.display_options(menu_object)
-    choice_option = menu.choose_option()
-    print(choice_option)
-    created_menu_class = menu.activate_child_class(menu_object)
-    print(created_menu_class)
+#     menu.display_options(menu_object)
+#     choice_option = menu.choose_option()
+#     print(choice_option)
+#     created_menu_class = menu.activate_child_class(menu_object)
+#     print(created_menu_class)
+    # ✅
+# teraz trzeba wprowadzic aktywowanie funkcji powyzej 🛠️
 
     connection, cursor = connect_to_database()
-    # select_all_from_table_by_id(cursor, 'view_patient_medicines', 'pat_id')
+    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')✅
     # print('load_or_print_patients_medicines_from_view:')
-    # load_or_print_patients_medicines_from_view(cursor)
+    # load_or_print_patients_medicines_from_view(cursor) ✅
     print('---*---------*-----------*---------*--')
-    data = Patient_Medicines_View.load_patient_medicines(cursor, 6)
+    # printing patiens view: (working ok ✅)
+    data = Patient_Medicines_View.load_patient_medicines(cursor,3)
     Patient_Medicines_View.print_patient_medicines_view(data)
 
     print('-------------------')
-    patients = PatientDB().load_patients_details(cursor)
-    PatientDB.print_patients()
+    # patients = PatientDB().load_patients_details(cursor) ✅
+    # PatientDB.print_patient() ✅
 
-    PatientDB.add_patient_to_database(patient_details=('Szczadowazy', 'Sikadomiski', 'szczadowazysikadomiski@gmail.com'))
-
+    # PatientDB.add_patient_to_database(patient_details=('Szczadowazy', 'Sikadomiski', 'szczadowazysikadomiski@gmail.com')) ✅
+    # PatientDB.delete_patient(connection, cursor) ✅
     cursor.close()
     connection.close()
 # ++++++++++++++++++++++++++++++
