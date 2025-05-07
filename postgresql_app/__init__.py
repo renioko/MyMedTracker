@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
 
+from csv import Error
 from dataclasses import dataclass
 import sys
 from typing import Optional, List, Any
@@ -24,7 +25,7 @@ Then he will choose an operation on that object.'''
 
 class Menu:
     def __init__(self, choice: int, object: dict, option) -> None:
-        self.choice = 0  # number 
+        self.choice = 0  # number - nie wiem czy potrzebny? ❓
         self.object: dict  = {
         1: 'Medicine',
         2: 'Patient',
@@ -32,49 +33,26 @@ class Menu:
         4: 'EXIT'
 }
         self.option = {}
-         # name of the operation on the object[choice-number]
-        # function: dict = {}  # function to be executed
-        # child_class: str
+
     def build_options(self, menu_object):
         self.option = {
             1: f'Add new {self.object[menu_object]}',
             2: f'Delete {self.object[menu_object]}',
             3: f'Update {self.object[menu_object]}',
-            4: f'View all {self.object[menu_object]}s',
+            4: f'View {self.object[menu_object]}',
             5: f'Assign {self.object[menu_object]}',
             6: 'View Patient Medicines list',
             7: 'Exit'
         }
         return self.option
-    # def __post_init__(self) -> None:
-
-    #     self.option = {
-    #         1: f'Add new {self.object[menu_object]}', # to w nawiasie moze byc zbedne
-    #         2: f'Delete {self.object[menu_object]}',
-    #         3: f'Update {self.object[menu_object]}',
-    #         4: f'View all {self.object[menu_object]}s',
-    #         5: f'Assign {self.object[menu_object]}',
-    #         6: 'View Patient Medicines list',
-    #         7: 'Exit'
-    #     }
-
-    #     self.child_class = self.object.get(self.choice)
-
-        # self.function = {
-        #     1: 'add',
-        #     2: 'delete',
-        #     3: 'update',
-        #     4: 'view',
-        #     5: 'assign',
-        #     6: 'exit'
-        # }
 
     def display_menu(self) -> None:
         print("Welcome to MyMedTracker!")
         for key, value in self.object.items():
             print(f'{key}. {value}')
 
-    def choose_menu_object(self) -> int | None:    # zwraca mi liczbe, ktora odpowiada obiektowi, jaki bedzie obrabiany
+    def choose_menu_object(self) -> int | None:    
+        '''returns int that represents object user wants to work with i.e Medicine, Patient, Prescription'''
         while True:
             choice = input('Enter your choice: ')
             if choice.isdigit() and int(choice) in range(1, 4):
@@ -87,19 +65,20 @@ class Menu:
             else:
                 print('Invalid choice. Please try again.')
     
-    def activate_child_class(self, menu_object: int):
+    def activate_menu_child_class(self, menu_object: int, choice_option) -> Any:
+        '''this function activates medu for chosen object. called menu will then run function chosen by user'''
         menu_classes = {
-            1: MedicineDB(),
-            2: PatientDB(),
-            3: PrescriptionDB()
+            1: lambda: MedicineMenu(choice_option),
+            2: lambda: PatientMenu(choice_option),
+            3: lambda: PrescriptionMenu(choice_option)
         }
         if menu_object in self.object: #
-            pass
-            menu_class = menu_classes[menu_object]
-            print(f'menu class: {menu_class}')
+            menu_class = menu_classes[menu_object]()
+            # return menu_class.run(choice_option)
             return menu_class
-
-
+        else:
+            print('Incorrect menu class.')
+            sys.exit() # w przyszlosci mozna dodac recursion
 
     def display_options(self, menu_object) -> None:
         self.option = self.build_options(menu_object)
@@ -170,7 +149,7 @@ class MedicineDB:
     def print_medicines(medicines) -> None:
         pass
 
-class MenuMedicine(MedicineDB):
+class MedicineMenu(Menu, MedicineDB):
     pass
 
 @ dataclass
@@ -242,8 +221,8 @@ class PatientDB:
         return (first_name, last_name, email)
 
     @classmethod
-    def add_patient_to_database(cls, patient_details: tuple[str, str, str] = None) -> None:
-        connection, cursor = connect_to_database()
+    def add_patient_to_database(cls, connection, cursor, patient_details: tuple[str, str, str] = None) -> None:
+        # connection, cursor = connect_to_database()
         if not patient_details:
             patient_details = cls.get_details_to_add_patient()
         try:
@@ -348,24 +327,67 @@ class PatientDB:
         else:
             print('List of patients is empty.')
     
-class PatientMenu(PatientDB, Menu):
     @classmethod
-    def get_funktion(self,cls):
+    def view_patient_medicines_list(cursor):
+        data = Patient_Medicines_View.load_patient_medicines(cursor,3)
+        Patient_Medicines_View.print_patient_medicines_view(data)
+
+class PatientMenu(PatientDB, Menu):
+    def __init__(self, choice_option):
+        super().__init__(0, {}, {})
         self.functions = {
             1: 'add_patient_to_database',
             2: 'delete_patient',
             3: 'alter_patient_details_in_db',
             4: 'print_patient',
             5: 'assign', # not working
-            6: 'exit'
-
+            6: 'view_patient_medicines_list', # utworzyc
+            7: 'exit'
         }
-    @classmethod
-    def execute_patient_menu(cls, self):
-        cls.display_options()
-        option = cls.choose_option()
-        method_name = self.functions.get(option)
-        print(method_name)
+        self.run(choice_option)
+        pass
+    def run(self, choice_option):
+        '''runs funkction chosen by user in menu options'''
+        # # to z poziomu menu - wybór obiektu
+        # self.display_menu()
+        # self.choose_menu_object()
+        # # to z poziomu menu patient:
+        # self.display_options()
+        # choice_option = self.choose_option() 
+# dotad działa - wywolywane w main
+        method_name = self.functions.get(choice_option) 
+        if not method_name:
+            print("This option is not implemented.")
+            return
+        method = getattr(self, method_name, None)
+        if method:
+            connection, cursor = connect_to_database()
+            try:
+                method()
+            except TypeError:
+                try:
+                    method(cursor,)
+                except TypeError:
+                    method(connection, cursor)
+                except Error as e:
+                    print(f'Error: {e}')
+
+            # # Jeśli metoda wymaga połączenia z bazą danych:
+            # if ('connection', 'cursor') in method.__code__.co_varnames:
+            #     method(connection, cursor)
+            # elif 'cursor' in method.__code__.co_varnames:
+            #     method(cursor,)
+            # else:
+            #     method()
+        else:
+            print(f"Function '{method_name}' not found.")
+
+    # @classmethod
+    # def execute_patient_menu(cls, self):
+    #     cls.display_options()
+    #     option = cls.choose_option()
+    #     method_name = self.function.get(option)
+    #     print(method_name)
 
 
 
@@ -395,7 +417,9 @@ class PrescriptionDB:
 #     medicine: Medicine
 #     patient: Patient
 #     prescription: Prescription
-         
+class PrescriptionMenu:
+    pass
+
 @ dataclass
 class Patient_Medicines_View:
     pat_id: int 
@@ -506,38 +530,43 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
         print('No records found.')
 
 def main() -> None:
-#     menu = Menu(0, {}, {})
-#     menu.display_menu()
-#     menu_object = menu.choose_menu_object()
-#     menu.choice = menu_object
+# praca z menu:
+    menu = Menu(0, {}, {})
+    menu.display_menu()
+    menu_object = menu.choose_menu_object()
+    menu.choice = menu_object
     # ✅ 
-# # od teraz powinna dzialac podklada menu
+# od teraz powinna dzialac podklada menu
 
-#     menu.display_options(menu_object)
-#     choice_option = menu.choose_option()
-#     print(choice_option)
-#     created_menu_class = menu.activate_child_class(menu_object)
-#     print(created_menu_class)
+    menu.display_options(menu_object)
+    choice_option = menu.choose_option()
+    # created_menu_class = menu.activate_child_class(menu_object)
+    # print(created_menu_class)
+    menu.activate_menu_child_class(menu_object, choice_option)
     # ✅
+
+
 # teraz trzeba wprowadzic aktywowanie funkcji powyzej 🛠️
 
+# praca z db:
     connection, cursor = connect_to_database()
-    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')✅
-    # print('load_or_print_patients_medicines_from_view:')
-    # load_or_print_patients_medicines_from_view(cursor) ✅
-    print('---*---------*-----------*---------*--')
-    # printing patiens view: (working ok ✅)
-    data = Patient_Medicines_View.load_patient_medicines(cursor,3)
-    Patient_Medicines_View.print_patient_medicines_view(data)
+    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    # ✅
+    # # print('load_or_print_patients_medicines_from_view:')
+    # # load_or_print_patients_medicines_from_view(cursor) ✅
+    # print('---*---------*-----------*---------*--')
+    # # printing patiens view: (working ok ✅)
+    # data = Patient_Medicines_View.load_patient_medicines(cursor,3)
+    # Patient_Medicines_View.print_patient_medicines_view(data)
 
-    print('-------------------')
-    # patients = PatientDB().load_patients_details(cursor) ✅
-    # PatientDB.print_patient() ✅
+    # print('-------------------')
+    # # patients = PatientDB().load_patients_details(cursor) ✅
+    # # PatientDB.print_patient() ✅
 
-    # PatientDB.add_patient_to_database(patient_details=('Szczadowazy', 'Sikadomiski', 'szczadowazysikadomiski@gmail.com')) ✅
-    # PatientDB.delete_patient(connection, cursor) ✅
-    cursor.close()
-    connection.close()
+    # # PatientDB.add_patient_to_database(connection, cursor, patient_details=('Szczadowazy', 'Sikadomiski', 'szczadowazysikadomiski@gmail.com')) ✅
+    # # PatientDB.delete_patient(connection, cursor) ✅
+    # cursor.close()
+    # connection.close()
 # ++++++++++++++++++++++++++++++
 
 if __name__ == "__main__":
