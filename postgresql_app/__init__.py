@@ -14,60 +14,95 @@ import config
 First user will choose an object on which he wants to perform an operation.
 Then he will choose an operation on that object.'''
 
-OBJECTS = {
+# OBJECTS = {
+#         1: 'Medicine',
+#         2: 'Patient',
+#         3: 'Prescription',
+#         4: 'EXIT'
+# }
+
+
+class Menu:
+    def __init__(self, choice: int, object: dict, option) -> None:
+        self.choice = 0  # number 
+        self.object: dict  = {
         1: 'Medicine',
         2: 'Patient',
         3: 'Prescription',
         4: 'EXIT'
 }
-
-@dataclass
-class Menu:
-    def __init__(self, choice, option, function) -> None:
-        choice: int = 0  # number 
-        option: dict  = {} # name of the operation on the object[choice-number]
-        function: dict = {}  # function to be executed
-
-    def __post_init__(self) -> None:
-
+        self.option = {}
+         # name of the operation on the object[choice-number]
+        # function: dict = {}  # function to be executed
+        # child_class: str
+    def build_options(self, menu_object):
         self.option = {
-            1: f'Add new {OBJECTS[self.choice]}', # to w nawiasie moze byc zbedne
-            2: f'Delete {OBJECTS[self.choice]}',
-            3: f'Update {OBJECTS[self.choice]}',
-            4: f'View all {OBJECTS[self.choice]}',
-            5: f'Assign {OBJECTS[self.choice]}',
+            1: f'Add new {self.object[menu_object]}',
+            2: f'Delete {self.object[menu_object]}',
+            3: f'Update {self.object[menu_object]}',
+            4: f'View all {self.object[menu_object]}s',
+            5: f'Assign {self.object[menu_object]}',
             6: 'View Patient Medicines list',
             7: 'Exit'
         }
+        return self.option
+    # def __post_init__(self) -> None:
 
-        self.function = {
-            1: 'add',
-            2: 'delete',
-            3: 'update',
-            4: 'view',
-            5: 'assign',
-            6: 'exit'
-        }
+    #     self.option = {
+    #         1: f'Add new {self.object[menu_object]}', # to w nawiasie moze byc zbedne
+    #         2: f'Delete {self.object[menu_object]}',
+    #         3: f'Update {self.object[menu_object]}',
+    #         4: f'View all {self.object[menu_object]}s',
+    #         5: f'Assign {self.object[menu_object]}',
+    #         6: 'View Patient Medicines list',
+    #         7: 'Exit'
+    #     }
+
+    #     self.child_class = self.object.get(self.choice)
+
+        # self.function = {
+        #     1: 'add',
+        #     2: 'delete',
+        #     3: 'update',
+        #     4: 'view',
+        #     5: 'assign',
+        #     6: 'exit'
+        # }
 
     def display_menu(self) -> None:
         print("Welcome to MyMedTracker!")
-        for key, value in OBJECTS.items():
+        for key, value in self.object.items():
             print(f'{key}. {value}')
 
     def choose_menu_object(self) -> int | None:    # zwraca mi liczbe, ktora odpowiada obiektowi, jaki bedzie obrabiany
         while True:
             choice = input('Enter your choice: ')
             if choice.isdigit() and int(choice) in range(1, 4):
-                print('You selected object:', OBJECTS[int(choice)])
-                print('You chose:', OBJECTS[int(choice)])
-                return int(choice)
+                print('You chose:', self.object[int(choice)])
+                self.choice = int(choice)
+                return self.choice
             elif choice == '4':
                 print('Exiting the program. Goodbye!')
                 sys.exit(1)
             else:
                 print('Invalid choice. Please try again.')
+    
+    def activate_child_class(self, menu_object: int):
+        menu_classes = {
+            1: MedicineDB(),
+            2: PatientDB(),
+            3: PrescriptionDB()
+        }
+        if menu_object in self.object: #
+            pass
+            menu_class = menu_classes[menu_object]
+            print(f'menu class: {menu_class}')
+            return menu_class
 
-    def display_options(self) -> None:
+
+
+    def display_options(self, menu_object) -> None:
+        self.option = self.build_options(menu_object)
         print('Options:')
         for key, value in self.option.items():
             print(f'{key}. {value}')
@@ -77,19 +112,19 @@ class Menu:
             option = input('Choose an action: ')
             if option.isdigit() and int(option) in range(1, 7):
                 print('You selected:', self.option[int(option)])
-                return option
+                return int(option)
             elif option == '7':
                 print('Exiting the program. Goodbye!')
                 sys.exit(1)               
             else:
                 print('Invalid choice. Please try again.')
 
-    def get_function(self, option) -> str | None:
-        if option in self.function:
-            print(self.function[int(option)])
-            # return self.function[int(option)]() #czy to zadziała?
-        else:
-            sys.exit(1)
+    # def get_function(self, option) -> str | None:
+    #     if option in self.function:
+    #         print(self.function[int(option)])
+    #         # return self.function[int(option)]() #czy to zadziała?
+    #     else:
+    #         sys.exit(1)
 
 
 @ dataclass
@@ -134,6 +169,9 @@ class MedicineDB:
         pass
     def print_medicines(medicines) -> None:
         pass
+
+class MenuMedicine(MedicineDB):
+    pass
 
 @ dataclass
 class Patient:
@@ -291,7 +329,9 @@ class PatientDB:
 
 
     @classmethod
-    def print_patients(cls, patients) -> None:
+    def print_patients(cls) -> None:
+        connection, cursor = connect_to_database()
+        patients = cls.load_patients_details(cls, cursor)
         if patients:
             for patient in patients:
                 print('--PATIENTS---')
@@ -300,6 +340,26 @@ class PatientDB:
         else:
             print('List of patients is empty.')
     
+class PatientMenu(PatientDB, Menu):
+    @classmethod
+    def get_funktion(self,cls):
+        self.functions = {
+            1: 'add_patient_to_database',
+            2: 'delete_patient',
+            3: 'alter_patient_details_in_db',
+            4: 'print_patients',
+            5: 'assign', # not working
+            6: 'exit'
+
+        }
+    @classmethod
+    def execute_patient_menu(cls, self):
+        cls.display_options()
+        option = cls.choose_option()
+        method_name = self.functions.get(option)
+        print(method_name)
+
+
 
 @ dataclass
 class Prescription:
@@ -320,6 +380,8 @@ class Prescription:
         prescriptions.append(self)
         print('Prescription added.')
 
+class PrescriptionDB:
+    pass
 # class PatientMedicinesView:
 #     '''to moze byc wrapper'''
 #     medicine: Medicine
@@ -437,12 +499,18 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
 def main() -> None:
     menu = Menu(0, {}, {})
     menu.display_menu()
-    choice = menu.choose_menu_object()
-    menu.choice = choice  # Set the choice in the Menu instance
-    menu.__post_init__()  # Initialize options and functions based on the choice
-    menu.display_options()
-    option = menu.choose_option()
-    print(option)
+    menu_object = menu.choose_menu_object()
+    menu.choice = menu_object
+
+# od teraz powinna dzialac podklada menu
+
+
+
+    menu.display_options(menu_object)
+    choice_option = menu.choose_option()
+    print(choice_option)
+    created_menu_class = menu.activate_child_class(menu_object)
+    print(created_menu_class)
 
     connection, cursor = connect_to_database()
     # select_all_from_table_by_id(cursor, 'view_patient_medicines', 'pat_id')
@@ -454,7 +522,7 @@ def main() -> None:
 
     print('-------------------')
     patients = PatientDB().load_patients_details(cursor)
-    PatientDB.print_patients(patients)
+    PatientDB.print_patients()
 
     PatientDB.add_patient_to_database(patient_details=('Szczadowazy', 'Sikadomiski', 'szczadowazysikadomiski@gmail.com'))
 
