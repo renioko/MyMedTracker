@@ -10,9 +10,10 @@ from datetime import datetime, date
 import psycopg2
 import config
 
-# co musze jeszcze zrobic:
+# CO MUSZĘ JESZCZE ZROBIĆ:
 # zmodyfikowac Menu - usunac int (self.choice)
 # sunac niepotrzebne elementy
+#  WYWALIC kolumne presc_tab z bazy danych
 # nie wiem czy sie automatycznie connection zamyka 🚩
 # dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
 # moze przeniesc slowniki do toml?
