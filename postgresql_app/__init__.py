@@ -347,55 +347,61 @@ class PatientMenu(PatientDB, Menu):
         }
         self.run(choice_option)
         pass
+#     def run(self, choice_option):
+#         '''runs funkction chosen by user in menu options'''
+#         # # to z poziomu menu - wybór obiektu
+#         # self.display_menu()
+#         # self.choose_menu_object()
+#         # # to z poziomu menu patient:
+#         # self.display_options()
+#         # choice_option = self.choose_option() 
+# # dotad działa - wywolywane w main
+#         method_name = self.functions.get(choice_option) 
+#         if not method_name:
+#             print("This option is not implemented.")
+#             return
+#         method = getattr(self, method_name, None)
+#         if method:
+#             connection, cursor = connect_to_database()
+#             sig = inspect.signature(method)
+#             num_params = len(sig.parameters)
+#             try:
+#                 if num_params == 1:
+#                     method() #(self)
+#                 elif num_params == 2: #(self, cursor)
+#                     method(cursor)
+#                 elif num_params == 3: #(self, connection, cursor)
+#                     method(connection, cursor)
+#                 else:
+#                     print('Unsupported method')
+#             except Exception as e:
+#                 print(f'error during method execution: {e}')
+#         else:
+#             print(f"Function '{method_name}' not found.")
+
     def run(self, choice_option):
         '''runs funkction chosen by user in menu options'''
-        # # to z poziomu menu - wybór obiektu
-        # self.display_menu()
-        # self.choose_menu_object()
-        # # to z poziomu menu patient:
-        # self.display_options()
-        # choice_option = self.choose_option() 
-# dotad działa - wywolywane w main
+        connection, cursor = connect_to_database()
         method_name = self.functions.get(choice_option) 
-        if not method_name:
-            print("This option is not implemented.")
-            return
         method = getattr(self, method_name, None)
-        if method:
-            connection, cursor = connect_to_database()
-            sig = inspect.signature(method)
-            num_params = len(sig.parameters)
+        try:
+            method()
+        except TypeError:
             try:
-                if num_params == 1:
-                    method() #(self)
-                elif num_params == 2: #(self, cursor)
-                    method(cursor)
-                elif num_params == 3: #(self, connection, cursor)
-                    method(connection, cursor)
-                else:
-                    print('Unsupported method')
-            except Exception as e:
-                print(f'error during method execution: {e}')
+                method(cursor)
+            except TypeError:
+                method(connection, cursor)
+            except Error as e:
+                print(f'Error: {e}')
 
-            # try:
-            #     method()
-            # except TypeError:
-            #     try:
-            #         method(cursor,)
-            #     except TypeError:
-            #         method(connection, cursor)
-            #     except Error as e:
-            #         print(f'Error: {e}')
-
-            # # Jeśli metoda wymaga połączenia z bazą danych:
-            # if ('connection', 'cursor') in method.__code__.co_varnames:
-            #     method(connection, cursor)
-            # elif 'cursor' in method.__code__.co_varnames:
-            #     method(cursor,)
-            # else:
-            #     method()
+        # Jeśli metoda wymaga połączenia z bazą danych:
+        if ('connection', 'cursor') in method.__code__.co_varnames:
+            method(connection, cursor)
+        elif 'cursor' in method.__code__.co_varnames:
+            method(cursor,)
         else:
-            print(f"Function '{method_name}' not found.")
+            method()
+
 
     # @classmethod
     # def execute_patient_menu(cls, self):
