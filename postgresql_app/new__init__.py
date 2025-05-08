@@ -1,0 +1,587 @@
+from __future__ import annotations
+from collections import defaultdict
+
+from csv import Error
+from dataclasses import dataclass
+import sys
+from typing import Optional, List, Any
+from datetime import datetime, date
+# from time import strftime, strptime
+import psycopg2
+import config
+
+
+class DatabaseHandler:
+    '''This class is responsible for connecting and disconnecting to database.'''
+    def __init__(self):
+        self.connection, self.cursor = connect_to_database()
+
+    def close_connection(self):
+        """Close connection with database"""
+        if hasattr(self, 'connection') and self.connection:
+            self.connection.close()
+            print("Database connection closed.")
+
+class Menu:
+    def __init__(self, choice: int, object: dict, option) -> None:
+        self.choice = 0  # number - nie wiem czy potrzebny? ❓
+        self.object: dict  = {
+        1: 'Medicine',
+        2: 'Patient',
+        3: 'Prescription',
+        4: 'EXIT'
+}
+        self.option = {}
+
+    def build_options(self, menu_object):
+        self.option = {
+            1: f'Add new {self.object[menu_object]}',
+            2: f'Delete {self.object[menu_object]}',
+            3: f'Update {self.object[menu_object]}',
+            4: f'View {self.object[menu_object]}',
+            5: f'Assign {self.object[menu_object]}',
+            6: 'View Patient Medicines list',
+            7: 'Exit'
+        }
+        return self.option
+
+    def display_menu(self) -> None:
+        print("Welcome to MyMedTracker!")
+        for key, value in self.object.items():
+            print(f'{key}. {value}')
+
+    def choose_menu_object(self) -> int | None:    
+        '''returns int that represents object user wants to work with i.e Medicine, Patient, Prescription'''
+        while True:
+            choice = input('Enter your choice: ')
+            if choice.isdigit() and int(choice) in range(1, 4):
+                print('You chose:', self.object[int(choice)])
+                self.choice = int(choice)
+                return self.choice
+            elif choice == '4':
+                print('Exiting the program. Goodbye!')
+                sys.exit(1)
+            else:
+                print('Invalid choice. Please try again.')
+    
+    def activate_menu_child_class(self, menu_object: int, choice_option) -> Any:
+        '''this function activates medu for chosen object. called menu will then run function chosen by user'''
+        menu_classes = {
+            1: lambda: MedicineMenu(choice_option),
+            2: lambda: PatientMenu(choice_option),
+            3: lambda: PrescriptionMenu(choice_option)
+        }
+        if menu_object in self.object: #
+            menu_class = menu_classes[menu_object]()
+            # return menu_class.run(choice_option)
+            return menu_class
+        else:
+            print('Incorrect menu class.')
+            sys.exit() # w przyszlosci mozna dodac recursion
+
+    def display_options(self, menu_object) -> None:
+        self.option = self.build_options(menu_object)
+        print('Options:')
+        for key, value in self.option.items():
+            print(f'{key}. {value}')
+
+    def choose_option(self) -> int | None:
+        while True:
+            option = input('Choose an action: ')
+            if option.isdigit() and int(option) in range(1, 7):
+                print('You selected:', self.option[int(option)])
+                return int(option)
+            elif option == '7':
+                print('Exiting the program. Goodbye!')
+                sys.exit(1)               
+            else:
+                print('Invalid choice. Please try again.')
+
+@ dataclass
+class Medicine:
+    med_id: int
+    name: str
+    dosage: str
+    quantity: int
+    date: Optional[datetime.date] # data musi byc pobrana z view przez fk
+    description: Optional[str] = None
+
+   
+    def __post_init__(self):
+        if self.dosage is None:
+            self.dosage = ''
+        if int(self.quantity) < 0:
+            raise ValueError('ERROR! You entered a negative number.')
+        if self.date:
+            if isinstance(self.date, str):
+                self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
+            elif isinstance(self.date, datetime):
+                self.date = self.date.date()
+        else:
+            self.date = datetime.now().date()
+        if self.description is None:
+            self.description = ''
+        
+    def __str__(self):
+        return f"({self.med_id}, '{self.name}', '{self.dosage}', {self.quantity}, '{self.date.isoformat()}', '{self.description}')"
+
+    def is_low(self) -> bool:
+        return self.quantity <= 10 # nie dziala poprawnie
+    
+    def add_medicine(self, medicines: list) -> None:
+        medicines.append(self)
+        print('Medicine added.')
+
+class MedicineDB:
+    def get_medicine_details(cls):
+        pass
+    def load_medicines(cls, cursor) -> list[Medicine]:
+        pass
+    def print_medicines(medicines) -> None:
+        pass
+
+class MedicineMenu(Menu, MedicineDB):
+    pass
+
+@ dataclass
+class Patient:
+    pat_id: int
+    first_name: str
+    last_name: str
+    email: str
+
+    def __str__(self):
+        return (f'{self.pat_id:^4} {self.first_name:12} {self.last_name:25}, {self.email}')
+
+
+    # def add_patient(self, patients: list) -> None:
+    #     patients.append(self)
+    #     print('Patient added.')
+
+class PatientDB(DatabaseHandler):
+    '''This class manages database operations and Patient logic'''
+    
+    def __init__(self):
+        # Inicjalizujemy klasę bazową DatabaseHandler
+        super().__init__()
+
+    @classmethod
+    def get_patient_details_to_load(cls) -> tuple[str, str]:
+        choice = input('You want to load patient data. Do you know patient id? Y/N')
+        if choice.lower() == 'y':
+            try:
+                pat_id = int(input('Enter patient id: '))
+            except TypeError:
+                print('You entered incorrect data. Try again')
+                return cls.get_patient_details_to_load() # recursion / rekurencja
+            return ('pat_id', str(pat_id))
+        elif choice.lower() == 'n':
+            choice_2 = input('Do you know patient email? Y/N')
+            if choice_2.lower() == 'y':
+                pat_email = input('Enter patient email.')
+                if not '@' in pat_email:
+                    print('Email must contain @ character.')
+                    return cls.get_patient_details_to_load()
+                return ('email', pat_email)
+            else:
+                print('You can not load patient details without id or email.')
+                sys.exit()
+        else:
+            print('Incorrect answer. Try again.')
+            return cls.get_patient_details_to_load()
+        
+    @staticmethod
+    def get_details_to_add_patient() -> tuple[str, str, str]:
+        first_name = input('Enter patients first name: ')
+        last_name = input('Enter patients last name: ')
+        email = input('Enter patients email: ')
+        # validate email
+        return (first_name, last_name, email)
+
+    def add_patient_to_database(self, patient_details: tuple[str, str, str] = None) -> None:
+        if not patient_details:
+            patient_details = self.get_details_to_add_patient()
+        try:
+            self.cursor.execute('''
+            INSERT INTO new_patients (first_name, last_name, email)
+            VALUES (%s, %s, %s)
+            ''', patient_details            
+            )
+            self.connection.commit()
+            print('Patient added.')
+        except Exception as e:  # Używamy ogólnego Exception zamiast psycopg2.Error
+            print(f'Error occurred while adding new patient: {e}.')
+
+    def delete_patient(self, pat_id: int = None) -> None:
+        if not pat_id:
+            try:
+                pat_id = int(input('Enter patient id to delete this patient: '))
+            except ValueError:
+                print('You entered incorrect id.')
+                return
+
+        # Sprawdzenie: Czy pacjent istnieje?
+        self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
+        patient = self.cursor.fetchone()
+        if not patient:
+            print(f'Patient with ID {pat_id} does not exist.')
+            return
+
+        # Potwierdzenie usunięcia
+        validation = input(f'Are you sure you want to delete patient with id {pat_id}? Y/N ')
+        if validation.lower() == 'y':
+            try:
+                self.cursor.execute('DELETE FROM new_patients WHERE pat_id = %s', (pat_id,))
+                self.connection.commit()
+                print('Patient deleted.')
+            except Exception as e:
+                print(f'Error occurred while deleting patient: {e}')
+        else:
+            print('Deleting aborted.')
+
+    def alter_patient_details_in_db(self, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
+        if pat_id is None or column_to_change is None or new_details is None:
+            try:
+                pat_id = int(input('Enter patients id: '))
+            except ValueError:
+                print('Id must be a number. Try again.')
+                return
+                
+            allowed_columns = ['first_name', 'last_name', 'email']
+            column_to_change = input('What column you want to change? Enter "first_name", "last_name" or "email": ')
+            if column_to_change not in allowed_columns:
+                print('Invalid column name.')
+                return
+                
+            new_details = input('Enter a new value: ')
+            
+        try:
+            query = f'''
+            UPDATE new_patients SET {column_to_change} = %s
+            WHERE pat_id = %s
+            '''
+            self.cursor.execute(query, (new_details, pat_id))
+            self.connection.commit()
+            print('Patient detail changed.')
+        except Exception as e:
+            print(f'Error occurred while changing patient details: {e}')
+
+    def print_patient(self) -> None:
+        try:
+            pat_id = int(input('Enter patient id: '))
+            self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
+            patient = self.cursor.fetchone()
+            
+            if patient:
+                print('\n--PATIENT DETAILS---')
+                print('-id- -first_name- -last_name-------------- --email-------------')
+                print(f'{patient[0]:^4} {patient[1]:12} {patient[2]:25}, {patient[3]}')
+            else:
+                print(f'No patient found with ID {pat_id}.')
+        except ValueError:
+            print('Invalid patient ID format.')
+        except Exception as e:
+            print(f'Error retrieving patient details: {e}')
+
+    def view_patient_medicines_list(self) -> None:
+        try:
+            medicines = Patient_Medicines_View.load_patient_medicines(self.cursor)
+            if medicines:
+                Patient_Medicines_View.print_patient_medicines_view(medicines)
+        except Exception as e:
+            print(f"Error occurred while viewing patient's medicines: {e}")
+
+
+        # try:
+        #     pat_id = int(input('Enter patient id to view medicines: '))
+        #     self.cursor.execute('''
+        #     SELECT m.med_id, m.name, m.dosage, m.instructions
+        #     FROM medicines m
+        #     JOIN patient_medicines pm ON m.med_id = pm.medicine_id
+        #     WHERE pm.patient_id = %s
+        #     ''', (pat_id,))
+            
+        #     medicines = self.cursor.fetchall()
+            
+        #     if medicines:
+        #         print(f"\n--- Medicines for patient ID {pat_id} ---")
+        #         for med in medicines:
+        #             print(f"ID: {med[0]}")
+        #             print(f"Name: {med[1]}")
+        #             print(f"Dosage: {med[2]}")
+        #             print(f"Instructions: {med[3]}")
+        #             print("----------")
+        #     else:
+        #         print(f'No medicines assigned to patient with ID {pat_id}.')
+        # except ValueError:
+        #     print('Invalid patient ID format.')
+        # except Exception as e:
+        #     print(f'Error occurred while retrieving patient medicines: {e}.')
+
+
+class PatientMenu(Menu, PatientDB):
+    '''This class manages navigation and interface logic related to Patient'''
+    
+    def __init__(self, choice_option):
+        # Inicjalizujemy prawidłowo każdą klasę bazową
+        Menu.__init__(self, 0, {}, {})
+        PatientDB.__init__(self)  # To inicjalizuje również DatabaseHandler
+        
+        self.menu_functions = {
+            1: self.menu_add_patient,
+            2: self.menu_delete_patient,
+            3: self.menu_alter_patient_details,
+            4: self.menu_print_patient,
+            5: self.menu_assign_patient,
+            6: self.menu_view_patient_medicines,
+            7: self.menu_exit
+        }
+        
+        # Uruchamiamy od razu wybraną funkcję
+        self.run(choice_option)
+    
+    def run(self, choice_option):
+        """Runs chosen option"""
+        func = self.menu_functions.get(choice_option)
+        if func:
+            func()
+        else:
+            print("Invalid option selected.")
+
+    def menu_add_patient(self):
+        self.add_patient_to_database()
+
+    def menu_delete_patient(self):
+        self.delete_patient()
+
+    def menu_alter_patient_details(self):
+        self.alter_patient_details_in_db()
+
+    def menu_print_patient(self):
+        self.print_patient()
+
+    def menu_assign_patient(self): # nie działa
+        print("Asign not working write now. Sorry")
+
+    def menu_view_patient_medicines(self): # nie działa
+        self.view_patient_medicines_list()
+
+    def menu_exit(self):
+        print("Exiting patient menu")
+        self.close_connection()
+#     def run(self, choice_option):
+#         '''runs funkction chosen by user in menu options'''
+#         # # to z poziomu menu - wybór obiektu
+#         # self.display_menu()
+#         # self.choose_menu_object()
+#         # # to z poziomu menu patient:
+#         # self.display_options()
+#         # choice_option = self.choose_option() 
+# # dotad działa - wywolywane w main
+#         method_name = self.functions.get(choice_option) 
+#         if not method_name:
+#             print("This option is not implemented.")
+#             return
+#         method = getattr(self, method_name, None)
+#         if method:
+#             connection, cursor = connect_to_database()
+#             sig = inspect.signature(method)
+#             num_params = len(sig.parameters)
+#             try:
+#                 if num_params == 1:
+#                     method() #(self)
+#                 elif num_params == 2: #(self, cursor)
+#                     method(cursor)
+#                 elif num_params == 3: #(self, connection, cursor)
+#                     method(connection, cursor)
+#                 else:
+#                     print('Unsupported method')
+#             except Exception as e:
+#                 print(f'error during method execution: {e}')
+#         else:
+#             print(f"Function '{method_name}' not found.")
+
+    # def run(self, choice_option):
+    #     '''runs funkction chosen by user in menu options'''
+    #     connection, cursor = connect_to_database()
+        # method_name = self.functions.get(choice_option) 
+    #     method = getattr(self, method_name, None)
+    #     try:
+    #         method()
+    #     except TypeError:
+    #         try:
+    #             method(cursor)
+    #         except TypeError:
+    #             method(connection, cursor)
+    #         except Error as e:
+    #             print(f'Error: {e}')
+
+    #     # Jeśli metoda wymaga połączenia z bazą danych:
+    #     if ('connection', 'cursor') in method.__code__.co_varnames:
+    #         method(connection, cursor)
+    #     elif 'cursor' in method.__code__.co_varnames:
+    #         method(cursor,)
+    #     else:
+    #         method()
+
+
+    # @classmethod
+    # def execute_patient_menu(cls, self):
+    #     cls.display_options()
+    #     option = cls.choose_option()
+    #     method_name = self.function.get(option)
+    #     print(method_name)
+@ dataclass
+class Patient_Medicines_View:
+    pat_id: int 
+    first_name: str 
+    last_name: str 
+    med_id: int 
+    med_name: str 
+    last_issued: datetime.date
+
+    def __post_init__(self):
+        # Tu mozna by dodac jakas logikę po inicjalizacji, np. formatowanie daty
+        pass
+    @classmethod
+    def load_patient_medicines(cls, cursor, patient_id = None) -> list[Patient_Medicines_View] | None:
+        '''this funktion will print one patients view if id given. otherwise will ask for id or email'''
+        querry = '''
+            SELECT * FROM view_patient_medicines 
+                WHERE patient_id = %s'''
+        if patient_id:
+            try:
+                cursor.execute(querry, (patient_id,))
+                records = cursor.fetchall()
+            except psycopg2.Error as e:
+                print(f'Error occured: {e}.')
+                return None
+
+        else: 
+            column, value = PatientDB.get_patient_details_to_load()
+            allowed_columns = ['pat_id', 'email']
+            querry = f'''
+            SELECT * FROM view_patient_medicines 
+                WHERE {column} = %s'''
+            if column not in allowed_columns:
+                raise ValueError('Indalid action.')
+            try:
+                cursor.execute(querry, (value,))
+                records = cursor.fetchall()
+            except psycopg2.Error as e:
+                print(f'Error ocurred: {e}')
+                return None
+          
+        if records:
+                return [Patient_Medicines_View(*record) for record in records]
+        else:
+            print('Record not found.')
+            return None
+        
+    @classmethod
+    def print_patient_medicines_view(cls, data: List[Patient_Medicines_View]) -> None:
+        grouped = defaultdict(list)
+        for record in data:
+            key = (record.pat_id, record.first_name, record.last_name)
+            grouped[key].append((record.med_id, record.med_name, record.last_issued))
+        print("PATIENT'S MEDICINES VIEW:")
+        for (pat_id, first_name, last_name), meds in grouped.items():
+            print('-pat_id- -first_name- -last_name- ')
+            print(f'{pat_id :^8} {first_name :12} {last_name}')
+            print('-med_id- -medicine_name----------- -last_issued- ')
+            for med_id, med_name, last_issued in meds:
+                print(f'{med_id :^8} {med_name :25} {last_issued}')
+            print('---')
+
+
+@ dataclass
+class Prescription:
+    presc_id: int
+    presc_to_patient_id: int 
+    issue_date: datetime.date
+
+    def __post_init__(self):
+        if self.date:
+            if isinstance(self.date, str):
+                self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
+            elif isinstance(self.date, datetime):
+                self.date = self.date.date()
+        else:
+            self.date = datetime.now().date()
+
+    def add_prescription(self, prescriptions: list) -> None:
+        prescriptions.append(self)
+        print('Prescription added.')
+
+class PrescriptionDB:
+    pass
+# class PatientMedicinesView:
+#     '''to moze byc wrapper'''
+#     medicine: Medicine
+#     patient: Patient
+#     prescription: Prescription
+class PrescriptionMenu:
+    pass
+
+# helper function:
+def connect_to_database() -> Any:
+    """Create a database connection and cursor"""
+    try:
+        connection = psycopg2.connect(
+            dbname=config.DB_NAME,
+            user=config.DB_USER,
+            password=config.DB_PASSWORD,
+            host=config.DB_HOST,
+            port=config.DB_PORT
+        )
+        cursor = connection.cursor()
+        print("Connected to the database successfully.")
+        cursor.execute("SELECT version();")
+        record = cursor.fetchone()
+        print("You are connected to - ", record, "\n")
+        return connection, cursor
+    except Exception as e:
+        print(f"Error connecting to the database: {e}")
+        sys.exit(1)
+
+# funkcje dla administratora:
+def select_all_from_table_ordered_by_id(cursor: Any, table_name: str, id_name: str) -> None:
+    """Select all records from a given table"""
+    cursor.execute(f"SELECT * FROM {table_name} ORDER BY {id_name} ASC;")
+    records = cursor.fetchall()
+    for record in records:
+        print(record)
+
+def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
+    """Select all records from the view and prints records as in thhe table - as tuples"""
+    cursor.execute("""
+    SELECT pat_id, first_name, last_name, med_id, medicine_name, last_issued
+    FROM view_patient_medicines
+;
+""")
+    #     WHERE first_name = 'Anna'
+    records = cursor.fetchall()
+    if records:
+        for record in records:
+            print(record)
+    else:
+        print('No records found.')
+
+
+def main() -> None:
+    # Praca z menu:
+    # menu = Menu(0, {}, {})
+    # menu.display_menu()
+    # menu_object = menu.choose_menu_object()
+    # menu.choice = menu_object
+    
+    # menu.display_options(menu_object)
+    # choice_option = menu.choose_option()
+    # menu.activate_menu_child_class(menu_object, choice_option)
+    connection, cursor = connect_to_database()
+    load_or_print_patients_medicines_from_view(cursor)
+    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    connection.close()
+
+if __name__ == '__main__':
+    main()
