@@ -10,6 +10,13 @@ from datetime import datetime, date
 import psycopg2
 import config
 
+# co musze jeszcze zrobic:
+# zmodyfikowac Menu - usunac int (self.choice)
+# sunac niepotrzebne elementy
+# nie wiem czy sie automatycznie connection zamyka 🚩
+# dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
+# moze przeniesc slowniki do toml?
+# zbudowac jakis basic interface - moze we flasku? 
 
 class DatabaseHandler:
     '''This class is responsible for connecting and disconnecting to database.'''
@@ -578,10 +585,10 @@ def main() -> None:
     # menu.display_options(menu_object)
     # choice_option = menu.choose_option()
     # menu.activate_menu_child_class(menu_object, choice_option)
-    connection, cursor = connect_to_database()
-    load_or_print_patients_medicines_from_view(cursor)
-    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-    connection.close()
+    # connection, cursor = connect_to_database()
+    # load_or_print_patients_medicines_from_view(cursor)
+    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    # connection.close()
 
 if __name__ == '__main__':
     main()
