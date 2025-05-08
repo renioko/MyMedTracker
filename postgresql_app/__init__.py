@@ -22,6 +22,16 @@ Then he will choose an operation on that object.'''
 #         3: 'Prescription',
 #         4: 'EXIT'
 # }
+class DatabaseHandler:
+    '''This class is responsible for connecting and disconnecting to database.'''
+    def __init__(self):
+        self.connection, self.cursor = connect_to_database()
+
+    def close_connection(self):
+        """Close connection with database"""
+        if hasattr(self, 'connection') and self.connection:
+            self.connection.close()
+            print("Database connection closed.")
 
 
 class Menu:
@@ -168,7 +178,7 @@ class Patient:
         patients.append(self)
         print('Patient added.')
 
-class PatientDB:
+class PatientDB(DatabaseHandler):
 
     @classmethod
     def get_patient_details_to_load(cls) -> tuple[str, str]:
@@ -523,6 +533,7 @@ class Medicines: # czy to ma sens?
                 print('Item deleted.')
             else:
                 print('Item not found.')
+
 
 def connect_to_database() -> Any:
     """Create a database connection and cursor"""
