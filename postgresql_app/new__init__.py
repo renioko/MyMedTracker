@@ -473,7 +473,7 @@ class PrescriptionDB:
 class PrescriptionMenu:
     pass
 
-# helper function:
+@staticmethod
 def connect_to_database() -> Any:
     """Create a database connection and cursor"""
     try:
@@ -520,19 +520,19 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
 
 def main() -> None:
     # Praca z menu:
-    # menu = Menu(0, {}, {})
-    # menu.display_menu()
-    # menu_object = menu.choose_menu_object()
-    # menu.choice = menu_object
+    menu = Menu(0, {}, {})
+    menu.display_menu()
+    menu_object = menu.choose_menu_object()
+    menu.choice = menu_object
     
-    # menu.display_options(menu_object)
-    # choice_option = menu.choose_option()
-    # menu.activate_menu_child_class(menu_object, choice_option)
+    menu.display_options(menu_object)
+    choice_option = menu.choose_option()
+    menu.activate_menu_child_class(menu_object, choice_option)
 
-    connection, cursor = connect_to_database()
-    load_or_print_patients_medicines_from_view(cursor)
-    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-    connection.close()
+    # connection, cursor = connect_to_database()
+    # load_or_print_patients_medicines_from_view(cursor)
+    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    # connection.close()
 
 if __name__ == '__main__':
     main()
