@@ -335,7 +335,7 @@ class PatientDB(DatabaseHandler):
 
         except ValueError:
             print('Invalid patient ID format. Try again or enter empty space to exit.')
-            return cls.print_patient()
+            return cls.print_patient(self)
         
         try:
             self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
@@ -347,6 +347,7 @@ class PatientDB(DatabaseHandler):
                 print(f'{patient[0]:^4} {patient[1]:12} {patient[2]:25}, {patient[3]}')
             else:
                 print(f'No patient found with ID {pat_id}.')
+                return cls.print_patient(self)
 
         except Exception as e:
             print(f'Error retrieving patient details: {e}')
