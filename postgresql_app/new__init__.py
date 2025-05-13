@@ -1,7 +1,7 @@
 from __future__ import annotations
 from collections import defaultdict
 
-from csv import Error
+
 from dataclasses import dataclass
 import sys
 from typing import Optional, List, Any
@@ -20,7 +20,19 @@ import config
 # zbudowac jakis basic interface - moze we flasku? 
 
 OBJECTS = {
-
+    1: 'Medicine',
+    2: 'Patient',
+    3: 'Prescription',
+    4: 'EXIT'
+}
+DISPLAY_OPTIONS = {
+    1: f'Add new ',
+    2: f'Delete ',
+    3: f'Update ',
+    4: f'View ',
+    5: f'Assign ',
+    6: 'View Patient Medicines list',
+    7: 'Exit'
 }
 class DatabaseHandler:
     '''This class is responsible for connecting and disconnecting to database.'''
@@ -35,54 +47,45 @@ class DatabaseHandler:
 
 class Menu:
     def __init__(self, choice: int, object: dict, option) -> None:
-        self.choice = 0  # number - nie wiem czy potrzebny? ❓
-        self.object: dict  = {
-        1: 'Medicine',
-        2: 'Patient',
-        3: 'Prescription',
-        4: 'EXIT'
-}
-        self.option = {}
-
-    def build_options(self, menu_object):
-        self.option = {
-            1: f'Add new {self.object[menu_object]}',
-            2: f'Delete {self.object[menu_object]}',
-            3: f'Update {self.object[menu_object]}',
-            4: f'View {self.object[menu_object]}',
-            5: f'Assign {self.object[menu_object]}',
-            6: 'View Patient Medicines list',
-            7: 'Exit'
-        }
-        return self.option
+        self.object_choice = 0  # number - nie wiem czy potrzebny? ❓
+#         self.object: dict  = {
+#         1: 'Medicine',
+#         2: 'Patient',
+#         3: 'Prescription',
+#         4: 'EXIT'
+# }
+        self.option_choice_to_display = 0
+  
 
     def display_menu(self) -> None:
         print("Welcome to MyMedTracker!")
-        for key, value in self.object.items():
-            print(f'{key}. {value}')
+        for key, value in OBJECTS.items():
+            print(f'Press {key} for {value}')
 
-    def choose_menu_object(self) -> int | None:    
+    @classmethod
+    def choose_menu_object(cls) -> int | None:    
         '''returns int that represents object user wants to work with i.e Medicine, Patient, Prescription'''
         while True:
-            choice = input('Enter your choice: ')
-            if choice.isdigit() and int(choice) in range(1, 4):
-                print('You chose:', self.object[int(choice)])
-                self.choice = int(choice)
-                return self.choice
-            elif choice == '4':
+            menu_object = input('Enter your choice: ')
+            if menu_object.isdigit() and int(menu_object) in range(1, 4):
+                print('You chose:', OBJECTS[int(menu_object)])
+                menu_object = int(menu_object) # czemu self?
+                return menu_object # czemu bylo self.choice?
+            elif menu_object == '4':
                 print('Exiting the program. Goodbye!')
-                sys.exit(1)
+                sys.exit(0)
             else:
                 print('Invalid choice. Please try again.')
+                return cls.choose_menu_object() # recurssion
     
-    def activate_menu_child_class(self, menu_object: int, choice_option) -> Any:
+    def activate_menu_child_class(self, menu_object: int, choice_option: int) -> Any:
         '''this function activates medu for chosen object. called menu will then run function chosen by user'''
         menu_classes = {
             1: lambda: MedicineMenu(choice_option),
             2: lambda: PatientMenu(choice_option),
             3: lambda: PrescriptionMenu(choice_option)
         }
-        if menu_object in self.object: #
+        if menu_object in OBJECTS: #
             menu_class = menu_classes[menu_object]()
             # return menu_class.run(choice_option)
             return menu_class
@@ -90,23 +93,59 @@ class Menu:
             print('Incorrect menu class.')
             sys.exit() # w przyszlosci mozna dodac recursion
 
-    def display_options(self, menu_object) -> None:
-        self.option = self.build_options(menu_object)
-        print('Options:')
-        for key, value in self.option.items():
-            print(f'{key}. {value}')
+#     @classmethod
+#     def build_options(cls,self, menu_object):
+#         obj_number = self.object_choice
+#         # menu_object = OBJECTS[self.object_choice]
+#         for key, value in DISPLAY_OPTIONS.items():
+#             print()
 
-    def choose_option(self) -> int | None:
+
+
+#         option_choice = DISPLAY_OPTIONS[self.option_choice_to_display]
+#         if self.option_choice_to_display in range(1, 6):
+#             print(f"{OBJECTS[self.object_choice]}")
+#             print(f"{option_choice} {menu_object}")
+#         elif self.option_choice_to_display == 6 | self.option_choice_to_display == 7:
+#             print(option_choice)
+# # bez tego - wylapac wyjatek przy podawaniu object
+#         else:
+#             print('Wrong value. Try again.')
+#             return cls.build_options(menu_object)
+
+
+#         # for self.option_choice_to_display:
+
+        
+#         {
+#     1: f'Add new {OBJECTS[menu_object]}',
+#     2: f'Delete {OBJECTS[menu_object]}',
+#     3: f'Update {OBJECTS[menu_object]}',
+#     4: f'View {OBJECTS[menu_object]}',
+#     5: f'Assign {OBJECTS[menu_object]}',
+#     6: 'View Patient Medicines list',
+#     7: 'Exit'
+#         }
+#         return self.option
+    
+    def display_options(self, menu_object) -> None: # w self jest ukryty int menu_object
+        # self.option = self.build_options(menu_object)
+        print('Options:')
+        for key, value in DISPLAY_OPTIONS.items():
+            print(f'Press {key} for {value} {OBJECTS[menu_object]}')
+    @classmethod
+    def choose_option(cls, menu_object) -> int | None:
         while True:
             option = input('Choose an action: ')
             if option.isdigit() and int(option) in range(1, 7):
-                print('You selected:', self.option[int(option)])
+                print('You selected:', DISPLAY_OPTIONS[int(option)], OBJECTS[menu_object])
                 return int(option)
             elif option == '7':
                 print('Exiting the program. Goodbye!')
                 sys.exit(1)               
             else:
                 print('Invalid choice. Please try again.')
+                return cls.choose_option(menu_object)
 
 @ dataclass
 class Medicine:
@@ -523,10 +562,10 @@ def main() -> None:
     menu = Menu(0, {}, {})
     menu.display_menu()
     menu_object = menu.choose_menu_object()
-    menu.choice = menu_object
+    menu.object_choice = menu_object
     
     menu.display_options(menu_object)
-    choice_option = menu.choose_option()
+    choice_option = menu.choose_option(menu_object)
     menu.activate_menu_child_class(menu_object, choice_option)
 
     # connection, cursor = connect_to_database()
