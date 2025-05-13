@@ -132,7 +132,13 @@ class Menu:
         # self.option = self.build_options(menu_object)
         print('Options:')
         for key, value in DISPLAY_OPTIONS.items():
-            print(f'Press {key} for {value} {OBJECTS[menu_object]}')
+            if key in range(1, 6):
+                print(f'Press {key} for {value} {OBJECTS[menu_object]}')
+            elif key in range(6,8):
+                print(f"Press {key} for {value}")
+            else:
+                print('Something is wrong.')
+                
     @classmethod
     def choose_option(cls, menu_object) -> int | None:
         while True:
