@@ -19,6 +19,9 @@ import config
 # moze przeniesc slowniki do toml?
 # zbudowac jakis basic interface - moze we flasku? 
 
+OBJECTS = {
+
+}
 class DatabaseHandler:
     '''This class is responsible for connecting and disconnecting to database.'''
     def __init__(self):
@@ -377,68 +380,7 @@ class PatientMenu(Menu, PatientDB):
     def menu_exit(self):
         print("Exiting patient menu")
         self.close_connection()
-#     def run(self, choice_option):
-#         '''runs funkction chosen by user in menu options'''
-#         # # to z poziomu menu - wybór obiektu
-#         # self.display_menu()
-#         # self.choose_menu_object()
-#         # # to z poziomu menu patient:
-#         # self.display_options()
-#         # choice_option = self.choose_option() 
-# # dotad działa - wywolywane w main
-#         method_name = self.functions.get(choice_option) 
-#         if not method_name:
-#             print("This option is not implemented.")
-#             return
-#         method = getattr(self, method_name, None)
-#         if method:
-#             connection, cursor = connect_to_database()
-#             sig = inspect.signature(method)
-#             num_params = len(sig.parameters)
-#             try:
-#                 if num_params == 1:
-#                     method() #(self)
-#                 elif num_params == 2: #(self, cursor)
-#                     method(cursor)
-#                 elif num_params == 3: #(self, connection, cursor)
-#                     method(connection, cursor)
-#                 else:
-#                     print('Unsupported method')
-#             except Exception as e:
-#                 print(f'error during method execution: {e}')
-#         else:
-#             print(f"Function '{method_name}' not found.")
 
-    # def run(self, choice_option):
-    #     '''runs funkction chosen by user in menu options'''
-    #     connection, cursor = connect_to_database()
-        # method_name = self.functions.get(choice_option) 
-    #     method = getattr(self, method_name, None)
-    #     try:
-    #         method()
-    #     except TypeError:
-    #         try:
-    #             method(cursor)
-    #         except TypeError:
-    #             method(connection, cursor)
-    #         except Error as e:
-    #             print(f'Error: {e}')
-
-    #     # Jeśli metoda wymaga połączenia z bazą danych:
-    #     if ('connection', 'cursor') in method.__code__.co_varnames:
-    #         method(connection, cursor)
-    #     elif 'cursor' in method.__code__.co_varnames:
-    #         method(cursor,)
-    #     else:
-    #         method()
-
-
-    # @classmethod
-    # def execute_patient_menu(cls, self):
-    #     cls.display_options()
-    #     option = cls.choose_option()
-    #     method_name = self.function.get(option)
-    #     print(method_name)
 @ dataclass
 class Patient_Medicines_View:
     pat_id: int 
@@ -578,19 +520,19 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
 
 def main() -> None:
     # Praca z menu:
-    menu = Menu(0, {}, {})
-    menu.display_menu()
-    menu_object = menu.choose_menu_object()
-    menu.choice = menu_object
+    # menu = Menu(0, {}, {})
+    # menu.display_menu()
+    # menu_object = menu.choose_menu_object()
+    # menu.choice = menu_object
     
-    menu.display_options(menu_object)
-    choice_option = menu.choose_option()
-    menu.activate_menu_child_class(menu_object, choice_option)
+    # menu.display_options(menu_object)
+    # choice_option = menu.choose_option()
+    # menu.activate_menu_child_class(menu_object, choice_option)
 
-    # connection, cursor = connect_to_database()
-    # load_or_print_patients_medicines_from_view(cursor)
-    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-    # connection.close()
+    connection, cursor = connect_to_database()
+    load_or_print_patients_medicines_from_view(cursor)
+    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    connection.close()
 
 if __name__ == '__main__':
     main()
