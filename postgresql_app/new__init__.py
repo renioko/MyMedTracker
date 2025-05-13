@@ -323,9 +323,20 @@ class PatientDB(DatabaseHandler):
         except Exception as e:
             print(f'Error occurred while changing patient details: {e}')
 
-    def print_patient(self, pat_id=None) -> None:
+    @classmethod
+    def print_patient(cls, self, pat_id=None) -> None:
         if not pat_id:
-            pat_id = int(input('Enter patient id: '))
+            pat_id = input('Enter patient id (or empty space to exit): ')
+            if pat_id == ' ':
+                print('Exiting the program. Good bye!')
+                sys.exit(0)
+        try:
+            pat_id = int(pat_id)
+
+        except ValueError:
+            print('Invalid patient ID format. Try again or enter empty space to exit.')
+            return cls.print_patient()
+        
         try:
             self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
             patient = self.cursor.fetchone()
@@ -336,8 +347,7 @@ class PatientDB(DatabaseHandler):
                 print(f'{patient[0]:^4} {patient[1]:12} {patient[2]:25}, {patient[3]}')
             else:
                 print(f'No patient found with ID {pat_id}.')
-        except ValueError:
-            print('Invalid patient ID format.')
+
         except Exception as e:
             print(f'Error retrieving patient details: {e}')
 
@@ -416,7 +426,7 @@ class PatientMenu(Menu, PatientDB):
         self.alter_patient_details_in_db()
 
     def menu_print_patient(self):
-        self.print_patient()
+        self.print_patient(self)
 
     def menu_assign_patient(self): # nie działa
         print("Asign not working write now. Sorry")
