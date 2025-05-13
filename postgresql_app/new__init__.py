@@ -138,7 +138,7 @@ class Menu:
                 print(f"Press {key} for {value}")
             else:
                 print('Something is wrong.')
-                
+
     @classmethod
     def choose_option(cls, menu_object) -> int | None:
         while True:
@@ -265,6 +265,7 @@ class PatientDB(DatabaseHandler):
             )
             self.connection.commit()
             print('Patient added.')
+            
         except Exception as e:  # Używamy ogólnego Exception zamiast psycopg2.Error
             print(f'Error occurred while adding new patient: {e}.')
 
@@ -322,9 +323,10 @@ class PatientDB(DatabaseHandler):
         except Exception as e:
             print(f'Error occurred while changing patient details: {e}')
 
-    def print_patient(self) -> None:
-        try:
+    def print_patient(self, pat_id=None) -> None:
+        if not pat_id:
             pat_id = int(input('Enter patient id: '))
+        try:
             self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
             patient = self.cursor.fetchone()
             
