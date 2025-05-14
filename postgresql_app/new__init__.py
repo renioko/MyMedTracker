@@ -253,10 +253,32 @@ class PatientDB(DatabaseHandler):
         email = input('Enter patients email: ')
         # validate email
         return (first_name, last_name, email)
+    
+    @classmethod # albo @staticmethod?
+    def get_pat_id_from_patient_details(cls, self, patient_details: tuple[str, str, str]) -> int | None:
+        self.cursor.execute('''
+        SELECT pat_id FROM new_patients
+        WHERE first_name = %s AND last_name = %s AND email = %s
+        ''', patient_details)
+        result = self.cursor.fetchone()
+        if result:
+            try:
+                pat_id = int(result[0])
+                return pat_id
+            except (ValueError, TypeError):
+                print('Value received as pat_id is incorrect.')
+                return None
+        else:
+            print('Patient with given details not found.')
+            return None
 
-    def add_patient_to_database(self, patient_details: tuple[str, str, str] = None) -> None:
+        # result = self.cursor.fetchone()
+        # return result[0] if result else None
+
+    @classmethod
+    def add_patient_to_database(cls, self, patient_details: tuple[str, str, str] = None) -> None:
         if not patient_details:
-            patient_details = self.get_details_to_add_patient()
+            patient_details = cls.get_details_to_add_patient()
         try:
             self.cursor.execute('''
             INSERT INTO new_patients (first_name, last_name, email)
@@ -265,6 +287,8 @@ class PatientDB(DatabaseHandler):
             )
             self.connection.commit()
             print('Patient added.')
+            pat_id = cls.get_pat_id_from_patient_details(self, patient_details)
+            cls.print_patient(self, pat_id)
             
         except Exception as e:  # Używamy ogólnego Exception zamiast psycopg2.Error
             print(f'Error occurred while adding new patient: {e}.')
@@ -418,7 +442,7 @@ class PatientMenu(Menu, PatientDB):
             print("Invalid option selected.")
 
     def menu_add_patient(self):
-        self.add_patient_to_database()
+        self.add_patient_to_database(self)
 
     def menu_delete_patient(self):
         self.delete_patient()
