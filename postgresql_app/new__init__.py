@@ -46,7 +46,7 @@ class DatabaseHandler:
             print("Database connection closed.")
 
 class Menu:
-    def __init__(self, choice: int, object: dict, option) -> None:
+    def __init__(self, object_choice: int, option_choice_to_display) -> None:
         self.object_choice = 0  # number - nie wiem czy potrzebny? ❓
 #         self.object: dict  = {
 #         1: 'Medicine',
@@ -260,7 +260,7 @@ class PatientDB(DatabaseHandler):
         SELECT pat_id FROM new_patients
         WHERE first_name = %s AND last_name = %s AND email = %s
         ''', patient_details)
-        result = self.cursor.fetchone()
+        result = self.cursor.fetchone() # zwraca krotkę
         if result:
             try:
                 pat_id = int(result[0])
@@ -417,7 +417,7 @@ class PatientMenu(Menu, PatientDB):
     
     def __init__(self, choice_option):
         # Inicjalizujemy prawidłowo każdą klasę bazową
-        Menu.__init__(self, 0, {}, {})
+        Menu.__init__(self, 0, 0)
         PatientDB.__init__(self)  # To inicjalizuje również DatabaseHandler
         
         self.menu_functions = {
@@ -438,6 +438,7 @@ class PatientMenu(Menu, PatientDB):
         func = self.menu_functions.get(choice_option)
         if func:
             func()
+            main()
         else:
             print("Invalid option selected.")
 
@@ -598,11 +599,14 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
             print(record)
     else:
         print('No records found.')
+    
+# def running_menu() -> None:
+
 
 
 def main() -> None:
     # Praca z menu:
-    menu = Menu(0, {}, {})
+    menu = Menu(0, 0)
     menu.display_menu()
     menu_object = menu.choose_menu_object()
     menu.object_choice = menu_object
