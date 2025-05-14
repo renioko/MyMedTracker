@@ -320,7 +320,8 @@ class PatientDB(DatabaseHandler):
         else:
             print('Deleting aborted.')
 
-    def alter_patient_details_in_db(self, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
+    @classmethod
+    def alter_patient_details_in_db(cls, self, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
         if pat_id is None or column_to_change is None or new_details is None:
             try:
                 pat_id = int(input('Enter patients id: '))
@@ -343,7 +344,8 @@ class PatientDB(DatabaseHandler):
             '''
             self.cursor.execute(query, (new_details, pat_id))
             self.connection.commit()
-            print('Patient detail changed.')
+            print('Patient detail changed. New details:')
+            cls.print_patient(self, pat_id)
         except Exception as e:
             print(f'Error occurred while changing patient details: {e}')
 
@@ -449,7 +451,7 @@ class PatientMenu(Menu, PatientDB):
         self.delete_patient()
 
     def menu_alter_patient_details(self):
-        self.alter_patient_details_in_db()
+        self.alter_patient_details_in_db(self)
 
     def menu_print_patient(self):
         self.print_patient(self)
