@@ -343,34 +343,6 @@ class PatientDB(DatabaseHandler):
         except Exception as e:
             print(f"Error occurred while viewing patient's medicines: {e}")
 
-
-        # try:
-        #     pat_id = int(input('Enter patient id to view medicines: '))
-        #     self.cursor.execute('''
-        #     SELECT m.med_id, m.name, m.dosage, m.instructions
-        #     FROM medicines m
-        #     JOIN patient_medicines pm ON m.med_id = pm.medicine_id
-        #     WHERE pm.patient_id = %s
-        #     ''', (pat_id,))
-            
-        #     medicines = self.cursor.fetchall()
-            
-        #     if medicines:
-        #         print(f"\n--- Medicines for patient ID {pat_id} ---")
-        #         for med in medicines:
-        #             print(f"ID: {med[0]}")
-        #             print(f"Name: {med[1]}")
-        #             print(f"Dosage: {med[2]}")
-        #             print(f"Instructions: {med[3]}")
-        #             print("----------")
-        #     else:
-        #         print(f'No medicines assigned to patient with ID {pat_id}.')
-        # except ValueError:
-        #     print('Invalid patient ID format.')
-        # except Exception as e:
-        #     print(f'Error occurred while retrieving patient medicines: {e}.')
-
-
 class PatientMenu(Menu, PatientDB):
     '''This class manages navigation and interface logic related to Patient'''
     
@@ -387,8 +359,7 @@ class PatientMenu(Menu, PatientDB):
             5: self.menu_assign_patient,
             6: self.menu_view_patient_medicines,
             7: self.menu_exit
-        }
-        
+        }        
         # Uruchamiamy od razu wybraną funkcję
         self.run(choice_option)
     
@@ -555,10 +526,6 @@ def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
     else:
         print('No records found.')
     
-# def running_menu() -> None:
-
-
-
 def main() -> None:
     # Praca z menu:
     menu = Menu(0, 0)
