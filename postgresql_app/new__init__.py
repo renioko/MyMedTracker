@@ -47,15 +47,8 @@ class DatabaseHandler:
 
 class Menu:
     def __init__(self, object_choice: int, option_choice_to_display) -> None:
-        self.object_choice = 0  # number - nie wiem czy potrzebny? ❓
-#         self.object: dict  = {
-#         1: 'Medicine',
-#         2: 'Patient',
-#         3: 'Prescription',
-#         4: 'EXIT'
-# }
+        self.object_choice = 0  
         self.option_choice_to_display = 0
-  
 
     def display_menu(self) -> None:
         print("Welcome to MyMedTracker!")
@@ -69,8 +62,8 @@ class Menu:
             menu_object = input('Enter your choice: ')
             if menu_object.isdigit() and int(menu_object) in range(1, 4):
                 print('You chose:', OBJECTS[int(menu_object)])
-                menu_object = int(menu_object) # czemu self?
-                return menu_object # czemu bylo self.choice?
+                menu_object = int(menu_object) 
+                return menu_object
             elif menu_object == '4':
                 print('Exiting the program. Goodbye!')
                 sys.exit(0)
@@ -92,44 +85,8 @@ class Menu:
         else:
             print('Incorrect menu class.')
             sys.exit() # w przyszlosci mozna dodac recursion
-
-#     @classmethod
-#     def build_options(cls,self, menu_object):
-#         obj_number = self.object_choice
-#         # menu_object = OBJECTS[self.object_choice]
-#         for key, value in DISPLAY_OPTIONS.items():
-#             print()
-
-
-
-#         option_choice = DISPLAY_OPTIONS[self.option_choice_to_display]
-#         if self.option_choice_to_display in range(1, 6):
-#             print(f"{OBJECTS[self.object_choice]}")
-#             print(f"{option_choice} {menu_object}")
-#         elif self.option_choice_to_display == 6 | self.option_choice_to_display == 7:
-#             print(option_choice)
-# # bez tego - wylapac wyjatek przy podawaniu object
-#         else:
-#             print('Wrong value. Try again.')
-#             return cls.build_options(menu_object)
-
-
-#         # for self.option_choice_to_display:
-
-        
-#         {
-#     1: f'Add new {OBJECTS[menu_object]}',
-#     2: f'Delete {OBJECTS[menu_object]}',
-#     3: f'Update {OBJECTS[menu_object]}',
-#     4: f'View {OBJECTS[menu_object]}',
-#     5: f'Assign {OBJECTS[menu_object]}',
-#     6: 'View Patient Medicines list',
-#     7: 'Exit'
-#         }
-#         return self.option
     
-    def display_options(self, menu_object) -> None: # w self jest ukryty int menu_object
-        # self.option = self.build_options(menu_object)
+    def display_options(self, menu_object) -> None: 
         print('Options:')
         for key, value in DISPLAY_OPTIONS.items():
             if key in range(1, 6):
@@ -550,11 +507,7 @@ class Prescription:
 
 class PrescriptionDB:
     pass
-# class PatientMedicinesView:
-#     '''to moze byc wrapper'''
-#     medicine: Medicine
-#     patient: Patient
-#     prescription: Prescription
+
 class PrescriptionMenu:
     pass
 
