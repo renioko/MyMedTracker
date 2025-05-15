@@ -11,8 +11,8 @@ import psycopg2
 import config
 
 # CO MUSZĘ JESZCZE ZROBIĆ:
-# zmodyfikowac Menu - usunac int (self.choice)
-# sunac niepotrzebne elementy
+# zmodyfikowac Menu - usunac int (self.choice) ✅
+# usunac niepotrzebne elementy - in progress
 #  WYWALIC kolumne presc_tab z bazy danych
 # nie wiem czy sie automatycznie connection zamyka 🚩
 # dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
