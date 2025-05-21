@@ -170,15 +170,16 @@ class Patient: # zaczac uzywac w princie!!
 
     def __str__(self):
         return (f'{self.pat_id:^4} {self.first_name:12} {self.last_name:25}, {self.email}')
-
+    
+    # na razie nieppotrzebne:
     def create_patient(self, patient_details: tuple[int, str, str, str]) -> Patient:
         # pat_id, first_name, last_name, email = patient_details
         patient = Patient(*patient_details)
         return patient
-    
-    # def add_patient(self, patients: list) -> None:
-    #     patients.append(self)
-    #     print('Patient added.')
+    # na razie nieppotrzebne:
+    def add_patient(self, patients: list) -> None:
+        patients.append(self)
+        print('Patient added.')
 
 class PatientDB(DatabaseHandler):
     '''This class manages database operations and Patient logic'''
@@ -552,7 +553,7 @@ def main() -> None:
     connection, cursor = connect_to_database()
     load_or_print_patients_medicines_from_view(cursor)
     select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-    
+
     connection.close()
 
 if __name__ == '__main__':
