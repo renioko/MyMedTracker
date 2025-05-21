@@ -10,20 +10,25 @@ from datetime import datetime, date
 import psycopg2
 import config
 
+# from patiens_repository import PatienDB
+
 # CO MUSZĘ JESZCZE ZROBIĆ:
 # zmodyfikowac Menu - usunac int (self.choice) ✅
 # usunac niepotrzebne elementy - in progress
 #  WYWALIC kolumne presc_tab z bazy danych
-# nie wiem czy sie automatycznie connection zamyka 🚩
+# nie wiem czy sie automatycznie connection zamyka 🚩 - może użyc with?
 # dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
 # moze przeniesc slowniki do toml?
 # zbudowac jakis basic interface - moze we flasku? 
+# poprawic id w tabelach jako PK 
+# zmienic nazwy FK np presc_id na pełne prescription_id
+# podzial na pliki
 
 OBJECTS = {
     1: 'Medicine',
     2: 'Patient',
     3: 'Prescription',
-    4: 'EXIT'
+    4: 'EXIT' # jesli wybrano uzyc connection.close
 }
 DISPLAY_OPTIONS = {
     1: f'Add new ',
@@ -32,7 +37,7 @@ DISPLAY_OPTIONS = {
     4: f'View ',
     5: f'Assign ',
     6: 'View Patient Medicines list',
-    7: 'Exit'
+    7: 'Exit' # jesli wybrano uzyc powrot do glownego menu
 }
 class DatabaseHandler:
     '''This class is responsible for connecting and disconnecting to database.'''
@@ -157,7 +162,7 @@ class MedicineMenu(Menu, MedicineDB):
     pass
 
 @ dataclass
-class Patient:
+class Patient: # zaczac uzywac w princie!!
     pat_id: int
     first_name: str
     last_name: str
@@ -166,7 +171,11 @@ class Patient:
     def __str__(self):
         return (f'{self.pat_id:^4} {self.first_name:12} {self.last_name:25}, {self.email}')
 
-
+    def create_patient(self, patient_details: tuple[int, str, str, str]) -> Patient:
+        # pat_id, first_name, last_name, email = patient_details
+        patient = Patient(*patient_details)
+        return patient
+    
     # def add_patient(self, patients: list) -> None:
     #     patients.append(self)
     #     print('Patient added.')
@@ -322,12 +331,14 @@ class PatientDB(DatabaseHandler):
         
         try:
             self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
-            patient = self.cursor.fetchone()
+            patient_details = self.cursor.fetchone()
             
-            if patient:
+            if patient_details:
+                patient = Patient(*patient_details)
                 print('\n--PATIENT DETAILS---')
                 print('-id- -first_name- -last_name-------------- --email-------------')
-                print(f'{patient[0]:^4} {patient[1]:12} {patient[2]:25}, {patient[3]}')
+                # print(f'{patient_details[0]:^4} {patient_details[1]:12} {patient_details[2]:25}, {patient_details[3]}')
+                print(patient)
             else:
                 print(f'No patient found with ID {pat_id}.')
                 return cls.print_patient(self)
@@ -346,7 +357,7 @@ class PatientDB(DatabaseHandler):
 class PatientMenu(Menu, PatientDB):
     '''This class manages navigation and interface logic related to Patient'''
     
-    def __init__(self, choice_option):
+    def __init__(self, choice_option: int):
         # Inicjalizujemy prawidłowo każdą klasę bazową
         Menu.__init__(self, 0, 0)
         PatientDB.__init__(self)  # To inicjalizuje również DatabaseHandler
@@ -373,6 +384,7 @@ class PatientMenu(Menu, PatientDB):
             print("Invalid option selected.")
 
     def menu_add_patient(self):
+        # PatienDB.add #########
         self.add_patient_to_database(self)
 
     def menu_delete_patient(self):
@@ -537,10 +549,11 @@ def main() -> None:
     choice_option = menu.choose_option(menu_object)
     menu.activate_menu_child_class(menu_object, choice_option)
 
-    # connection, cursor = connect_to_database()
-    # load_or_print_patients_medicines_from_view(cursor)
-    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-    # connection.close()
+    connection, cursor = connect_to_database()
+    load_or_print_patients_medicines_from_view(cursor)
+    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    
+    connection.close()
 
 if __name__ == '__main__':
     main()
