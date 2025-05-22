@@ -489,12 +489,18 @@ class Prescription:
         prescriptions.append(self)
         print('Prescription added.')
 
+    def create_prescription(self, prescription_details):
+        prescription = Prescription(*prescription_details)
+        return prescription
+
 class PrescriptionDB:
     pass
 
 class PrescriptionMenu:
     pass
 
+
+# ________________________________________________________________________
 @staticmethod
 def connect_to_database() -> Any:
     """Create a database connection and cursor"""
