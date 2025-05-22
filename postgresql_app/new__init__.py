@@ -14,14 +14,14 @@ import config
 
 # CO MUSZĘ JESZCZE ZROBIĆ:
 # zmodyfikowac Menu - usunac int (self.choice) ✅
-# usunac niepotrzebne elementy - in progress
-#  WYWALIC kolumne presc_tab z bazy danych
-# nie wiem czy sie automatycznie connection zamyka 🚩 - może użyc with?
+# usunac niepotrzebne elementy - in progress    ✅
+#  WYWALIC kolumne presc_tab z bazy danych  ✅
+# nie wiem czy sie automatycznie connection zamyka 🚩 - może użyc with? // na końcu main connection.close ✅// PatientMenu - w opcji exit wywołuje connection_close ✅
 # dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
 # moze przeniesc slowniki do toml?
 # zbudowac jakis basic interface - moze we flasku? 
-# poprawic id w tabelach jako PK 
-# zmienic nazwy FK np presc_id na pełne prescription_id
+# poprawic id w tabelach jako PK - postanowilam, że zostawie jak jest i dopisze wyjasnienie w documentacji 💡
+# zmienic nazwy FK np presc_id na pełne prescription_id - postanowilam, że tylko dopisze'Fk' na końcu foreign keys 💡
 # podzial na pliki
 
 OBJECTS = {
@@ -550,11 +550,12 @@ def main() -> None:
     choice_option = menu.choose_option(menu_object)
     menu.activate_menu_child_class(menu_object, choice_option)
 
-    connection, cursor = connect_to_database()
-    load_or_print_patients_medicines_from_view(cursor)
-    select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+    # connection, cursor = connect_to_database()
+    # load_or_print_patients_medicines_from_view(cursor)
+    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
 
-    connection.close()
+    # connection.close()
+    # print('Connection closed')
 
 if __name__ == '__main__':
     main()
