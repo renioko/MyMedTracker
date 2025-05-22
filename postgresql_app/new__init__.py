@@ -23,6 +23,7 @@ import config
 # poprawic id w tabelach jako PK - postanowilam, że zostawie jak jest i dopisze wyjasnienie w documentacji 💡
 # zmienic nazwy FK np presc_id na pełne prescription_id - postanowilam, że tylko dopisze'Fk' na końcu foreign keys 💡
 # podzial na pliki
+# dodac rollback przy errorach zw z baza danych
 
 OBJECTS = {
     1: 'Medicine',
@@ -474,16 +475,20 @@ class Patient_Medicines_View:
 class Prescription:
     presc_id: int
     presc_to_patient_id: int 
-    issue_date: datetime.date
+    issue_date: date # zmienilam na date zamiast datetime.date
 
     def __post_init__(self):
-        if self.date:
-            if isinstance(self.date, str):
-                self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
-            elif isinstance(self.date, datetime):
-                self.date = self.date.date()
+        if self.issue_date:
+            if isinstance(self.issue_date, str):
+                try:
+                    self.issue_date = datetime.strptime(self.issue_date, '%Y-%m-%d').date()
+                except ValueError:
+                    print(f"Warning: Invalid date format for '{self.issue_date}'. Setting to today's date.")
+                    self.issue_date = datetime.now().date()
+            elif isinstance(self.issue_date, datetime):
+                self.issue_date = self.issue_date.date()
         else:
-            self.date = datetime.now().date()
+            self.issue_date = datetime.now().date()
 
     def add_prescription(self, prescriptions: list) -> None:
         prescriptions.append(self)
@@ -492,16 +497,131 @@ class Prescription:
     def create_prescription(self, prescription_details):
         prescription = Prescription(*prescription_details)
         return prescription
+# alternatywnie:
+    # def __post_init__(self):
+    #     if isinstance(self.issue_date, str):
+    #         try:
+    #             self.issue_date = datetime.strptime(self.issue_date, '%Y-%m-%d').date()
+    #         except ValueError:
+    #             print(f"Warning: Invalid date format. Setting to today's date.")
+    #             self.issue_date = date.today()
+    #     elif isinstance(self.issue_date, datetime):
+    #         self.issue_date = self.issue_date.date()
 
-class PrescriptionDB:
-    pass
 
-class PrescriptionMenu:
+class PrescriptionDB(DatabaseHandler):
+    '''This class manages database operations and Prescription logic'''
+    def __init__(self):
+        # Inicjalizujemy klasę bazową DatabaseHandler
+        super().__init__()
+
+    def get_presc_id_from_prescription_details(self, patient_details: tuple[int, date]) -> Optional[int]: # czy datetime.datetime?
+        pat_id, issue_date = patient_details
+        self.cursor.execute('''
+    SELECT presc_id FROM new_prescriptions WHERE pat_id = %s AND issue_date = %s
+''', (pat_id, issue_date))
+        result = self.cursor.fetchone()
+        if result:
+            try: 
+                presc_id = int(result[0])
+                return presc_id
+        # return int(result[0]) if result else None  /moze tak?/
+            except (ValueError, TypeError):
+                print('Value received as presc_id is incorrect.')
+                return None
+        else:
+            print('Prescription with given details not found.')
+            return None
+
+    def get_date_from_user(self) -> date:
+        while True:
+            date_input = input('Enter issue date in format YYYY-MM-DD: ').strip()
+            
+            if not date_input: 
+                print('Date cannot be empty. Try again.')
+                continue
+                
+            try:
+                # Parsowanie daty i konwersja do date
+                parsed_date = datetime.strptime(date_input, '%Y-%m-%d').date()
+                
+                # Dodatkowa walidacja - data nie może być z przyszłości
+                if parsed_date > date.today():
+                    print('Issue date cannot be in the future. Try again.')
+                    continue      
+
+                return parsed_date
+                
+            except ValueError:
+                print('Incorrect date format. Please use YYYY-MM-DD format (e.g., 2024-12-31). Try again.')
+                continue
+    
+    def get_prescription_details(self) -> tuple[int, date]|None:
+        # moge zostawic date pusta, pozniej utworzyc obiekt Prescription i tam jus w selfie jest formatowanie daty*
+        while True:
+
+            pat_id_input = input('Enter patient id: (or enter space to exit)').strip()
+            if pat_id_input == ' ':
+                Menu.display_menu()
+                return None
+
+            try:
+                pat_id = int(pat_id_input)
+                if pat_id <= 0:
+                    print('Patient ID must be a positive number. Try again.')
+                    continue
+                break
+            except (TypeError, ValueError):
+                print('You entered incorrect data. Try again.')
+                # return self.get_prescription_details() #  uzytkownik może wpisac ' ' to exit
+                continue
+            
+        while True:
+            date_option = input('Do you want to set prescription issue date? Y/N')
+            if date_option == 'Y':
+                issue_date = self.get_date_from_user()
+                break
+            elif date_option == 'N':
+                issue_date = datetime.today()
+                print(f'Default date set to: {issue_date}')
+                break
+
+            else:
+                print('Incorrect input. Back to menu.')
+                Menu.display_menu()
+            return pat_id, issue_date
+
+    
+    def add_prescription_to_database(self, prescription_details: tuple[int, date]=None): # or datetime?
+        if not prescription_details:
+            prescription_details = self.get_prescription_details()
+        pat_id, issue_date = prescription_details
+        try:
+            self.cursor.execute('''
+        INSERT INTO new_prescriptions (pat_id, issue_date)
+        VALUES (%s, %s)
+''', (pat_id, issue_date))
+            self.connection.commit()
+            print("Prescription added")
+            presc_id = self.get_presc_id_from_prescription_details(prescription_details)
+            print(f"Prescription id: {presc_id}")
+            # print presc id or presc details
+        except Exception as e:
+            self.connection.rollback()
+            print(f'Error adding prescription: {e}')
+            
+
+    
+
+
+
+
+class PrescriptionMenu(Menu, Prescription):
     pass
 
 
 # ________________________________________________________________________
-@staticmethod
+# @staticmethod
 def connect_to_database() -> Any:
     """Create a database connection and cursor"""
     try:
