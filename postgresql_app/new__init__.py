@@ -626,8 +626,17 @@ class PrescriptionDB(DatabaseHandler):
             self.connection.commit()
         print('Medicines added to prescription.')
 
-    def create_new_prescription(self, pat_id, issue_date) -> int:
+
+
+
+    
+    def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> int:
         '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
+
+        if not prescription_details:
+            prescription_details = self.get_prescription_details()
+        pat_id, issue_date = prescription_details
+        # get new presc_id:
         try:
             self.cursor.execute('''
             INSERT INTO new_prescriptions (pat_id, issue_date)
@@ -637,21 +646,15 @@ class PrescriptionDB(DatabaseHandler):
             self.connection.commit()
             print("Prescription added")
 
-            # get new presc_id:
-            presc_id = self.get_presc_id_from_prescription_details(pat_id, issue_date)
-
-            print(f"Prescription id: {presc_id}")
-            return presc_id
-
             # print presc id or presc details
         except Exception as e:
             self.connection.rollback()
             print(f'Error adding prescription: {e}')
-    
-    def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None): # or datetime?
-        if not prescription_details:
-            prescription_details = self.get_prescription_details()
-        pat_id, issue_date = prescription_details
+
+        presc_id = self.get_presc_id_from_prescription_details(pat_id, issue_date)
+
+        print(f"Prescription id: {presc_id}")
+        return presc_id
 
 
 
