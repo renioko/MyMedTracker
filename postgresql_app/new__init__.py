@@ -187,7 +187,7 @@ class PatientDB(DatabaseHandler):
     
     def __init__(self):
         # Inicjalizujemy klasę bazową DatabaseHandler
-        super().__init__()
+        super().__init__(self)
 
     @classmethod
     def get_patient_details_to_load(cls) -> tuple[str, str]:
@@ -515,8 +515,8 @@ class PrescriptionDB(DatabaseHandler):
         # Inicjalizujemy klasę bazową DatabaseHandler
         super().__init__()
 
-    def get_presc_id_from_prescription_details(self, patient_details: tuple[int, date]) -> Optional[int]: # czy datetime.datetime?
-        pat_id, issue_date = patient_details
+    def get_presc_id_from_prescription_details(self, pat_id: int, issue_date: date) -> Optional[int]: # czy datetime.datetime?
+
         self.cursor.execute('''
     SELECT presc_id FROM new_prescriptions WHERE pat_id = %s AND issue_date = %s
 ''', (pat_id, issue_date))
@@ -575,49 +575,135 @@ class PrescriptionDB(DatabaseHandler):
                 print('You entered incorrect data. Try again.')
                 # return self.get_prescription_details() #  uzytkownik może wpisac ' ' to exit
                 continue
-            
-        while True:
-            date_option = input('Do you want to set prescription issue date? Y/N')
-            if date_option == 'Y':
-                issue_date = self.get_date_from_user()
-                break
-            elif date_option == 'N':
-                issue_date = datetime.today()
-                print(f'Default date set to: {issue_date}')
-                break
 
-            else:
-                print('Incorrect input. Back to menu.')
-                Menu.display_menu()
-            return pat_id, issue_date
+        date_option = input('If you want to set prescription issue datepress Y').strip().upper()
+        if date_option == 'Y':
+            issue_date = self.get_date_from_user()
 
+        else:
+            issue_date = date.today()
+            print(f'Default date set to: {issue_date}')
+
+        return pat_id, issue_date
     
-    def add_prescription_to_database(self, prescription_details: tuple[int, date]=None): # or datetime?
-        if not prescription_details:
-            prescription_details = self.get_prescription_details()
-        pat_id, issue_date = prescription_details
+    def get_medicine_id_for_prescription(self) -> int|None:
+
+        medicine_name = input('Enter medicine name you are looking for: ')
         try:
             self.cursor.execute('''
-        INSERT INTO new_prescriptions (pat_id, issue_date)
-        VALUES (%s, %s)
-''', (pat_id, issue_date))
+            SELECT med_id FROM new_medicines 
+            WHERE med_name = %s
+            ''', (medicine_name,))
+            result = self.cursor.fetchone()
+            if result:
+                med_id = int(result[0])
+                print(f"med_id: {med_id}")
+                return med_id
+            else:
+                print('medicine not found')
+        except Exception as e:
+            print(f'Error looking for medicine: {e}')
+            return None
+
+    def complete_list_of_medicines_id(self) -> list[int]:
+        medicine_ids = []
+        while True:
+            med_id = self.get_medicine_id_for_prescription()
+            medicine_ids.append(med_id)
+            print(f'Medicine id: {med_id} added to the list')
+            continuation_choice = input('Do you want to add more medicines id? Y/N ').strip().upper()
+            if continuation_choice == 'N':
+                break
+
+        return medicine_ids
+    
+    def add_medicines_to_prescription(self, presc_id: int, medicine_ids: list[int]) -> None:
+        for med_id in medicine_ids:
+            self.cursor.execute(f'''
+        INSERT INTO new_prescriptions_medicines (presc_id, med_id)
+        VALUES ({presc_id}, {med_id})
+''')
+            self.connection.commit()
+        print('Medicines added to prescription.')
+
+    def create_new_prescription(self, pat_id, issue_date) -> int:
+        '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
+        try:
+            self.cursor.execute('''
+            INSERT INTO new_prescriptions (pat_id, issue_date)
+            VALUES (%s, %s)
+            ''', (pat_id, issue_date))
+
             self.connection.commit()
             print("Prescription added")
-            presc_id = self.get_presc_id_from_prescription_details(prescription_details)
+
+            # get new presc_id:
+            presc_id = self.get_presc_id_from_prescription_details(pat_id, issue_date)
+
             print(f"Prescription id: {presc_id}")
+            return presc_id
+
             # print presc id or presc details
         except Exception as e:
             self.connection.rollback()
             print(f'Error adding prescription: {e}')
-            
-
     
+    def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None): # or datetime?
+        if not prescription_details:
+            prescription_details = self.get_prescription_details()
+        pat_id, issue_date = prescription_details
 
 
 
+        # adding medicines to relational table (n:n)
+        if not medicines_ids:
+            medicines_ids = self.complete_list_of_medicines_id()
+            print(f'medicines_ids: {medicines_ids}')
+        self.add_medicines_to_prescription(presc_id, medicines_ids)
 
-class PrescriptionMenu(Menu, Prescription):
-    pass
+class PrescriptionMenu(Menu, PrescriptionDB):
+    '''This class manages navigation and interface logic related to Patient'''
+    
+    def __init__(self, choice_option: int):
+        # Inicjalizujemy prawidłowo każdą klasę bazową
+        Menu.__init__(self, 0, 0)
+        PrescriptionDB.__init__(self)  # To inicjalizuje również DatabaseHandler
+    
+        self.menu_functions = {
+            1: self.menu_add_prescription,
+            2: self.menu_delete_prescription,
+            3: self.menu_alter_prescription_details,
+            4: self.menu_print_prescription,
+            5: self.menu_assign_prescription,
+            6: self.menu_view_patient_medicines,
+            7: self.menu_exit
+        }        
+        # Uruchamiamy od razu wybraną funkcję
+        self.run(choice_option)
+
+    def run(self, choice_option):
+        """Runs chosen option"""
+        func = self.menu_functions.get(choice_option)
+        if func:
+            func()
+            main()
+        else:
+            print("Invalid option selected.")
+
+    def menu_add_prescription(self):
+        self.add_prescription_to_database(prescription_details=None)
+    def menu_delete_prescription(self):
+        pass
+    def menu_alter_prescription_details(self):
+        pass
+    def menu_print_prescription(self):
+        pass
+    def menu_assign_prescription(self):
+        pass
+    def menu_view_patient_medicines(self):
+        pass
+    def menu_exit(self):
+        self.close_connection()
 
 
 # ________________________________________________________________________
@@ -679,7 +765,8 @@ def main() -> None:
     # connection, cursor = connect_to_database()
     # load_or_print_patients_medicines_from_view(cursor)
     # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-
+    # prescription_connection = PrescriptionDB()
+    # prescription_connection.get_medicine_id_for_prescription()
     # connection.close()
     # print('Connection closed')
 
