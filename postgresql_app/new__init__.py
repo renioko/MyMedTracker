@@ -17,7 +17,7 @@ import config
 # usunac niepotrzebne elementy - in progress    ✅
 #  WYWALIC kolumne presc_tab z bazy danych  ✅
 # nie wiem czy sie automatycznie connection zamyka 🚩 - może użyc with? // na końcu main connection.close ✅// PatientMenu - w opcji exit wywołuje connection_close ✅
-# dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
+# dodac assign - zeby w pelni móc przypisywac pacjentów i recepty ✂️ jednak bedzie to funkcja dla administracji
 # moze przeniesc slowniki do toml?
 # zbudowac jakis basic interface - moze we flasku? 
 # poprawic id w tabelach jako PK - postanowilam, że zostawie jak jest i dopisze wyjasnienie w documentacji 💡
@@ -36,7 +36,7 @@ DISPLAY_OPTIONS = {
     2: f'Delete ',
     3: f'Update ',
     4: f'View ',
-    5: f'Assign ',
+    5: f'Assign ', # usunac ta opcje - bedzie dla administracji
     6: 'View Patient Medicines list',
     7: 'Exit' # jesli wybrano uzyc powrot do glownego menu
 }
@@ -369,7 +369,7 @@ class PatientMenu(Menu, PatientDB):
             2: self.menu_delete_patient,
             3: self.menu_alter_patient_details,
             4: self.menu_print_patient,
-            5: self.menu_assign_patient,
+            5: self.menu_assign_patient, # to bedzie dla administracji
             6: self.menu_view_patient_medicines,
             7: self.menu_exit
         }        
@@ -497,17 +497,6 @@ class Prescription:
     def create_prescription(self, prescription_details):
         prescription = Prescription(*prescription_details)
         return prescription
-# alternatywnie:
-    # def __post_init__(self):
-    #     if isinstance(self.issue_date, str):
-    #         try:
-    #             self.issue_date = datetime.strptime(self.issue_date, '%Y-%m-%d').date()
-    #         except ValueError:
-    #             print(f"Warning: Invalid date format. Setting to today's date.")
-    #             self.issue_date = date.today()
-    #     elif isinstance(self.issue_date, datetime):
-    #         self.issue_date = self.issue_date.date()
-
 
 class PrescriptionDB(DatabaseHandler):
     '''This class manages database operations and Prescription logic'''
@@ -516,7 +505,6 @@ class PrescriptionDB(DatabaseHandler):
         super().__init__()
 
     def get_presc_id_from_prescription_details(self, pat_id: int, issue_date: date) -> Optional[int]: # czy datetime.datetime?
-
         self.cursor.execute('''
     SELECT presc_id FROM new_prescriptions WHERE pat_id = %s AND issue_date = %s
 ''', (pat_id, issue_date))
@@ -536,7 +524,6 @@ class PrescriptionDB(DatabaseHandler):
     def get_date_from_user(self) -> date:
         while True:
             date_input = input('Enter issue date in format YYYY-MM-DD: ').strip()
-            
             if not date_input: 
                 print('Date cannot be empty. Try again.')
                 continue
@@ -544,14 +531,11 @@ class PrescriptionDB(DatabaseHandler):
             try:
                 # Parsowanie daty i konwersja do date
                 parsed_date = datetime.strptime(date_input, '%Y-%m-%d').date()
-                
                 # Dodatkowa walidacja - data nie może być z przyszłości
                 if parsed_date > date.today():
                     print('Issue date cannot be in the future. Try again.')
                     continue      
-
                 return parsed_date
-                
             except ValueError:
                 print('Incorrect date format. Please use YYYY-MM-DD format (e.g., 2024-12-31). Try again.')
                 continue
@@ -564,7 +548,6 @@ class PrescriptionDB(DatabaseHandler):
             if pat_id_input == ' ':
                 Menu.display_menu()
                 return None
-
             try:
                 pat_id = int(pat_id_input)
                 if pat_id <= 0:
@@ -614,7 +597,6 @@ class PrescriptionDB(DatabaseHandler):
             continuation_choice = input('Do you want to add more medicines id? Y/N ').strip().upper()
             if continuation_choice == 'N':
                 break
-
         return medicine_ids
     
     def add_medicines_to_prescription(self, presc_id: int, medicine_ids: list[int]) -> None:
@@ -626,10 +608,6 @@ class PrescriptionDB(DatabaseHandler):
             self.connection.commit()
         print('Medicines added to prescription.')
 
-
-
-
-    
     def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> int:
         '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
 
@@ -655,8 +633,6 @@ class PrescriptionDB(DatabaseHandler):
 
         print(f"Prescription id: {presc_id}")
         return presc_id
-
-
 
         # adding medicines to relational table (n:n)
         if not medicines_ids:
