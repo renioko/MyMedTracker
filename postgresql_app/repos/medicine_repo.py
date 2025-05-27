@@ -11,7 +11,7 @@ import psycopg2
 from config import config_file
 
 from models import Medicine
-from postgresql_app.database_connection import DatabaseHandler
+from database_connection import DatabaseHandler
 
 class MedicineDB(DatabaseHandler, Medicine):
     '''This class manages database operations and Medicine logic'''
