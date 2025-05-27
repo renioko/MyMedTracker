@@ -534,87 +534,87 @@ from config import config_file
 #         prescriptions.append(self)
 #         print('Prescription added.')
 
-    def create_prescription(self, prescription_details):
-        prescription = Prescription(*prescription_details)
-        return prescription
-# alternatywnie:
-    # def __post_init__(self):
-    #     if isinstance(self.issue_date, str):
-    #         try:
-    #             self.issue_date = datetime.strptime(self.issue_date, '%Y-%m-%d').date()
-    #         except ValueError:
-    #             print(f"Warning: Invalid date format. Setting to today's date.")
-    #             self.issue_date = date.today()
-    #     elif isinstance(self.issue_date, datetime):
-    #         self.issue_date = self.issue_date.date()
+#     def create_prescription(self, prescription_details):
+#         prescription = Prescription(*prescription_details)
+#         return prescription
+# # alternatywnie:
+#     # def __post_init__(self):
+#     #     if isinstance(self.issue_date, str):
+#     #         try:
+#     #             self.issue_date = datetime.strptime(self.issue_date, '%Y-%m-%d').date()
+#     #         except ValueError:
+#     #             print(f"Warning: Invalid date format. Setting to today's date.")
+#     #             self.issue_date = date.today()
+#     #     elif isinstance(self.issue_date, datetime):
+#     #         self.issue_date = self.issue_date.date()
 
 
-# class PrescriptionDB(DatabaseHandler):
-#     '''This class manages database operations and Prescription logic'''
-#     def __init__(self):
-#         # Inicjalizujemy klasę bazową DatabaseHandler
-#         super().__init__()
+# # class PrescriptionDB(DatabaseHandler):
+# #     '''This class manages database operations and Prescription logic'''
+# #     def __init__(self):
+# #         # Inicjalizujemy klasę bazową DatabaseHandler
+# #         super().__init__()
 
-    def get_presc_id_from_prescription_details(self, pat_id: int, issue_date: date) -> Optional[int]: # czy datetime.datetime?
+#     def get_presc_id_from_prescription_details(self, pat_id: int, issue_date: date) -> Optional[int]: # czy datetime.datetime?
 
-        self.cursor.execute('''
-    SELECT presc_id FROM new_prescriptions WHERE pat_id = %s AND issue_date = %s
-''', (pat_id, issue_date))
-        result = self.cursor.fetchone()
-        if result:
-            try: 
-                presc_id = int(result[0])
-                return presc_id
-        # return int(result[0]) if result else None  /moze tak?/
-            except (ValueError, TypeError):
-                print('Value received as presc_id is incorrect.')
-                return None
-        else:
-            print('Prescription with given details not found.')
-            return None
+#         self.cursor.execute('''
+#     SELECT presc_id FROM new_prescriptions WHERE pat_id = %s AND issue_date = %s
+# ''', (pat_id, issue_date))
+#         result = self.cursor.fetchone()
+#         if result:
+#             try: 
+#                 presc_id = int(result[0])
+#                 return presc_id
+#         # return int(result[0]) if result else None  /moze tak?/
+#             except (ValueError, TypeError):
+#                 print('Value received as presc_id is incorrect.')
+#                 return None
+#         else:
+#             print('Prescription with given details not found.')
+#             return None
 
-    def get_date_from_user(self) -> date:
-        while True:
-            date_input = input('Enter issue date in format YYYY-MM-DD: ').strip()
+#     def get_date_from_user(self) -> date:
+#         while True:
+#             date_input = input('Enter issue date in format YYYY-MM-DD: ').strip()
             
-            if not date_input: 
-                print('Date cannot be empty. Try again.')
-                continue
+#             if not date_input: 
+#                 print('Date cannot be empty. Try again.')
+#                 continue
                 
-            try:
-                # Parsowanie daty i konwersja do date
-                parsed_date = datetime.strptime(date_input, '%Y-%m-%d').date()
+#             try:
+#                 # Parsowanie daty i konwersja do date
+#                 parsed_date = datetime.strptime(date_input, '%Y-%m-%d').date()
                 
-                # Dodatkowa walidacja - data nie może być z przyszłości
-                if parsed_date > date.today():
-                    print('Issue date cannot be in the future. Try again.')
-                    continue      
+#                 # Dodatkowa walidacja - data nie może być z przyszłości
+#                 if parsed_date > date.today():
+#                     print('Issue date cannot be in the future. Try again.')
+#                     continue      
 
-                return parsed_date
+#                 return parsed_date
                 
-            except ValueError:
-                print('Incorrect date format. Please use YYYY-MM-DD format (e.g., 2024-12-31). Try again.')
-                continue
+#             except ValueError:
+#                 print('Incorrect date format. Please use YYYY-MM-DD format (e.g., 2024-12-31). Try again.')
+#                 continue
     
 #     def get_prescription_details(self) -> tuple[int, date]|None:
 #         # moge zostawic date pusta, pozniej utworzyc obiekt Prescription i tam jus w selfie jest formatowanie daty*
 #         while True:
 
-            pat_id_input = input('Enter patient id: (or enter space to exit)').strip()
-            if pat_id_input == ' ':
-                Menu.display_menu()
-                return None
+            # pat_id_input = input('Enter patient id: (or enter space to exit)').strip()
+            # if pat_id_input == ' ':
+            #     Menu.display_menu()
+            #     return None
 
-            try:
-                pat_id = int(pat_id_input)
-                if pat_id <= 0:
-                    print('Patient ID must be a positive number. Try again.')
-                    continue
-                break
-            except (TypeError, ValueError):
-                print('You entered incorrect data. Try again.')
-                # return self.get_prescription_details() #  uzytkownik może wpisac ' ' to exit
-                continue
+            # try:
+            #     pat_id = int(pat_id_input)
+            #     if pat_id <= 0:
+            #         print('Patient ID must be a positive number. Try again.')
+            #         continue
+            #     break
+            # except (TypeError, ValueError):
+            #     print('You entered incorrect data. Try again.')
+            #     # return self.get_prescription_details() #  uzytkownik może wpisac ' ' to exit
+            #     continue
 
 #         date_option = input('If you want to set prescription issue datepress Y').strip().upper()
 #         if date_option == 'Y':
@@ -645,35 +645,35 @@ from config import config_file
 #             print(f'Error looking for medicine: {e}')
 #             return None
 
-    def complete_list_of_medicines_id(self) -> list[int]:
-        medicine_ids = []
-        while True:
-            med_id = self.get_medicine_id_for_prescription()
-            medicine_ids.append(med_id)
-            print(f'Medicine id: {med_id} added to the list')
-            continuation_choice = input('Do you want to add more medicines id? Y/N ').strip().upper()
-            if continuation_choice == 'N':
-                break
+#     def complete_list_of_medicines_id(self) -> list[int]:
+#         medicine_ids = []
+#         while True:
+#             med_id = self.get_medicine_id_for_prescription()
+#             medicine_ids.append(med_id)
+#             print(f'Medicine id: {med_id} added to the list')
+#             continuation_choice = input('Do you want to add more medicines id? Y/N ').strip().upper()
+#             if continuation_choice == 'N':
+#                 break
 
-        return medicine_ids
+#         return medicine_ids
     
-    def add_medicines_to_prescription(self, presc_id: int, medicine_ids: list[int]) -> None:
-        for med_id in medicine_ids:
-            self.cursor.execute(f'''
-        INSERT INTO new_prescriptions_medicines (presc_id, med_id)
-        VALUES ({presc_id}, {med_id})
-''')
-            self.connection.commit()
-        print('Medicines added to prescription.')
+#     def add_medicines_to_prescription(self, presc_id: int, medicine_ids: list[int]) -> None:
+#         for med_id in medicine_ids:
+#             self.cursor.execute(f'''
+#         INSERT INTO new_prescriptions_medicines (presc_id, med_id)
+#         VALUES ({presc_id}, {med_id})
+# ''')
+#             self.connection.commit()
+#         print('Medicines added to prescription.')
 
 
 
 
     
-    def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> int:
-        '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
+#     def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> int:
+#         '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
 
-#         if not prescription_details:
+# #         if not prescription_details:
 #             prescription_details = self.get_prescription_details()
 #         pat_id, issue_date = prescription_details
 #         # get new presc_id:
@@ -693,19 +693,20 @@ from config import config_file
 
 #         presc_id = self.get_presc_id_from_prescription_details(pat_id, issue_date)
 
-        print(f"Prescription id: {presc_id}")
-        return presc_id
+        # print(f"Prescription id: {presc_id}")
+        
 
 
+        # # adding medicines to relational table (n:n)
+        # if not medicines_ids:
+        #     medicines_ids = self.complete_list_of_medicines_id()
+        #     print(f'medicines_ids: {medicines_ids}')
+        # self.add_medicines_to_prescription(presc_id, medicines_ids)
+        # return presc_id
 
-        # adding medicines to relational table (n:n)
-        if not medicines_ids:
-            medicines_ids = self.complete_list_of_medicines_id()
-            print(f'medicines_ids: {medicines_ids}')
-        self.add_medicines_to_prescription(presc_id, medicines_ids)
 
-class PrescriptionMenu(Menu, PrescriptionDB):
-    '''This class manages navigation and interface logic related to Patient'''
+# class PrescriptionMenu(Menu, PrescriptionDB):
+#     '''This class manages navigation and interface logic related to Patient'''
     
 #     def __init__(self, choice_option: int):
 #         # Inicjalizujemy prawidłowo każdą klasę bazową
