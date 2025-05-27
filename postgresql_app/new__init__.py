@@ -8,7 +8,7 @@ from typing import Optional, List, Any
 from datetime import datetime, date
 # from time import strftime, strptime
 import psycopg2
-import config
+import config_file
 
 # from patiens_repository import PatienDB
 
@@ -187,7 +187,7 @@ class PatientDB(DatabaseHandler):
     
     def __init__(self):
         # Inicjalizujemy klasę bazową DatabaseHandler
-        super().__init__(self)
+        super().__init__()
 
     @classmethod
     def get_patient_details_to_load(cls) -> tuple[str, str]:
@@ -563,7 +563,6 @@ class PrescriptionDB(DatabaseHandler):
             pat_id_input = input('Enter patient id: (or enter space to exit)').strip()
             if pat_id_input == ' ':
                 Menu.display_menu()
-                return None
 
             try:
                 pat_id = int(pat_id_input)
@@ -715,11 +714,11 @@ def connect_to_database() -> Any:
     """Create a database connection and cursor"""
     try:
         connection = psycopg2.connect(
-            dbname=config.DB_NAME,
-            user=config.DB_USER,
-            password=config.DB_PASSWORD,
-            host=config.DB_HOST,
-            port=config.DB_PORT
+            dbname=config_file.DB_NAME,
+            user=config_file.DB_USER,
+            password=config_file.DB_PASSWORD,
+            host=config_file.DB_HOST,
+            port=config_file.DB_PORT
         )
         cursor = connection.cursor()
         print("Connected to the database successfully.")
