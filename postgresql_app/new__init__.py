@@ -788,24 +788,24 @@ from config import config_file
 #     else:
 #         print('No records found.')
     
-def main() -> None:
-    # Praca z menu:
-    menu = Menu(0, 0)
-    menu.display_menu()
-    menu_object = menu.choose_menu_object()
-    menu.object_choice = menu_object
+# def main() -> None:
+#     # Praca z menu:
+#     menu = Menu(0, 0)
+#     menu.display_menu()
+#     menu_object = menu.choose_menu_object()
+#     menu.object_choice = menu_object
     
-    menu.display_options(menu_object)
-    choice_option = menu.choose_option(menu_object)
-    menu.activate_menu_child_class(menu_object, choice_option)
+#     menu.display_options(menu_object)
+#     choice_option = menu.choose_option(menu_object)
+#     menu.activate_menu_child_class(menu_object, choice_option)
 
-    # connection, cursor = connect_to_database()
-    # load_or_print_patients_medicines_from_view(cursor)
-    # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
-    # prescription_connection = PrescriptionDB()
-    # prescription_connection.get_medicine_id_for_prescription()
-    # connection.close()
-    # print('Connection closed')
+#     # connection, cursor = connect_to_database()
+#     # load_or_print_patients_medicines_from_view(cursor)
+#     # select_all_from_table_ordered_by_id(cursor, 'new_patients', 'pat_id')
+#     # prescription_connection = PrescriptionDB()
+#     # prescription_connection.get_medicine_id_for_prescription()
+#     # connection.close()
+#     # print('Connection closed')
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
