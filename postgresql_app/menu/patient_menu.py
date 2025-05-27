@@ -12,14 +12,16 @@ from config import config_file
 
 from menu.main_menu import Menu
 from repos.patient_repo import PatientDB
+from repos.patient_medicine_view_repo import Patient_Medicines_ViewDB
 
-class PatientMenu(Menu, PatientDB):
+class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB):
     '''This class manages navigation and interface logic related to Patient'''
     
     def __init__(self, choice_option: int):
         # Inicjalizujemy prawidłowo każdą klasę bazową
         Menu.__init__(self, 0, 0)
         PatientDB.__init__(self)  # To inicjalizuje również DatabaseHandler
+        Patient_Medicines_ViewDB.__init__(self)
         
         self.menu_functions = {
             1: self.menu_add_patient,

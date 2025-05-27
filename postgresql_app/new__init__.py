@@ -356,13 +356,13 @@ from config import config_file
 
 # tutaj nie wiem gdzie to dac - moze to view i potem wywolac w menu?
 
-    def view_patient_medicines_list(self) -> None:
-        try:
-            medicines = Patient_Medicines_View.load_patient_medicines(self.cursor)
-            if medicines:
-                Patient_Medicines_View.print_patient_medicines_view(medicines)
-        except Exception as e:
-            print(f"Error occurred while viewing patient's medicines: {e}")
+    # def view_patient_medicines_list(self) -> None:
+    #     try:
+    #         medicines = Patient_Medicines_ViewDB.load_patient_medicines(self.cursor)
+    #         if medicines:
+    #             Patient_Medicines_ViewDB.print_patient_medicines_view(medicines)
+    #     except Exception as e:
+    #         print(f"Error occurred while viewing patient's medicines: {e}")
 
 # class PatientMenu(Menu, PatientDB):
 #     '''This class manages navigation and interface logic related to Patient'''
@@ -766,27 +766,27 @@ from config import config_file
 #         sys.exit(1)
 
 # funkcje dla administratora:
-def select_all_from_table_ordered_by_id(cursor: Any, table_name: str, id_name: str) -> None:
-    """Select all records from a given table"""
-    cursor.execute(f"SELECT * FROM {table_name} ORDER BY {id_name} ASC;")
-    records = cursor.fetchall()
-    for record in records:
-        print(record)
+# def select_all_from_table_ordered_by_id(cursor: Any, table_name: str, id_name: str) -> None:
+#     """Select all records from a given table"""
+#     cursor.execute(f"SELECT * FROM {table_name} ORDER BY {id_name} ASC;")
+#     records = cursor.fetchall()
+#     for record in records:
+#         print(record)
 
-def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
-    """Select all records from the view and prints records as in thhe table - as tuples"""
-    cursor.execute("""
-    SELECT pat_id, first_name, last_name, med_id, medicine_name, last_issued
-    FROM view_patient_medicines
-;
-""")
-    #     WHERE first_name = 'Anna'
-    records = cursor.fetchall()
-    if records:
-        for record in records:
-            print(record)
-    else:
-        print('No records found.')
+# def load_or_print_patients_medicines_from_view(cursor: Any) -> None:
+#     """Select all records from the view and prints records as in thhe table - as tuples"""
+#     cursor.execute("""
+#     SELECT pat_id, first_name, last_name, med_id, medicine_name, last_issued
+#     FROM view_patient_medicines
+# ;
+# """)
+#     #     WHERE first_name = 'Anna'
+#     records = cursor.fetchall()
+#     if records:
+#         for record in records:
+#             print(record)
+#     else:
+#         print('No records found.')
     
 def main() -> None:
     # Praca z menu:

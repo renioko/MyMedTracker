@@ -11,13 +11,15 @@ import psycopg2
 from config import config_file
 
 from models import Patient_Medicines_View
-from utils import DatabaseHandler
+from postgresql_app.database_connection import DatabaseHandler
 
 class Patient_Medicines_ViewDB(Patient_Medicines_View, DatabaseHandler):
     '''This class manages database operations and Patient_Medicines_View logic'''
     def __init__(self):
         # Inicjalizujemy klasę bazową DatabaseHandler
-        super().__init__()
+        DatabaseHandler.__init__(self)
+        Patient_Medicines_View.__init__(self, 0, '', '', 0, '', date.today())
+        # super().__init__()
 
     @classmethod
     def get_patient_details_to_load(cls) -> tuple[str, str]:
@@ -93,3 +95,20 @@ class Patient_Medicines_ViewDB(Patient_Medicines_View, DatabaseHandler):
             for med_id, med_name, last_issued in meds:
                 print(f'{med_id :^8} {med_name :25} {last_issued}')
             print('---')
+
+    def view_patient_medicines_list(self) -> None:
+        try:
+            medicines = Patient_Medicines_ViewDB.load_patient_medicines(self.cursor)
+            if medicines:
+                Patient_Medicines_ViewDB.print_patient_medicines_view(medicines)
+        except Exception as e:
+            print(f"Error occurred while viewing patient's medicines: {e}")
+
+
+def main():
+    db = DatabaseHandler()
+    view = Patient_Medicines_ViewDB()
+    view.view_patient_medicines_list()
+
+if __name__ == '__main__':
+    main()
