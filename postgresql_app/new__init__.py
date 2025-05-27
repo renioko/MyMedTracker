@@ -23,7 +23,7 @@ from config import config_file
 # usunac niepotrzebne elementy - in progress    ✅
 #  WYWALIC kolumne presc_tab z bazy danych  ✅
 # nie wiem czy sie automatycznie connection zamyka 🚩 - może użyc with? // na końcu main connection.close ✅// PatientMenu - w opcji exit wywołuje connection_close ✅
-# dodac assign - zeby w pelni móc przypisywac pacjentów i recepty ✂️ jednak bedzie to funkcja dla administracji
+# dodac assign - zeby w pelni móc przypisywac pacjentów i recepty
 # moze przeniesc slowniki do toml?
 # zbudowac jakis basic interface - moze we flasku? 
 # poprawic id w tabelach jako PK - postanowilam, że zostawie jak jest i dopisze wyjasnienie w documentacji 💡
@@ -372,17 +372,17 @@ from config import config_file
 #         Menu.__init__(self, 0, 0)
 #         PatientDB.__init__(self)  # To inicjalizuje również DatabaseHandler
         
-        # self.menu_functions = {
-        #     1: self.menu_add_patient,
-        #     2: self.menu_delete_patient,
-        #     3: self.menu_alter_patient_details,
-        #     4: self.menu_print_patient,
-        #     5: self.menu_assign_patient,
-        #     6: self.menu_view_patient_medicines,
-        #     7: self.menu_exit
-        # }        
-        # # Uruchamiamy od razu wybraną funkcję
-        # self.run(choice_option)
+#         self.menu_functions = {
+#             1: self.menu_add_patient,
+#             2: self.menu_delete_patient,
+#             3: self.menu_alter_patient_details,
+#             4: self.menu_print_patient,
+#             5: self.menu_assign_patient,
+#             6: self.menu_view_patient_medicines,
+#             7: self.menu_exit
+#         }        
+#         # Uruchamiamy od razu wybraną funkcję
+#         self.run(choice_option)
     
 #     def run(self, choice_option):
 #         """Runs chosen option"""
@@ -475,7 +475,7 @@ from config import config_file
 #                 return None
 
 #         else: 
-#             column, value = Patient_Medicines_View.DB.get_patient_details_to_load()
+#             column, value = PatientDB.get_patient_details_to_load()
 #             allowed_columns = ['pat_id', 'email']
 #             querry = f'''
 #             SELECT * FROM view_patient_medicines 
@@ -549,11 +549,11 @@ from config import config_file
 #     #         self.issue_date = self.issue_date.date()
 
 
-# # class PrescriptionDB(DatabaseHandler):
-# #     '''This class manages database operations and Prescription logic'''
-# #     def __init__(self):
-# #         # Inicjalizujemy klasę bazową DatabaseHandler
-# #         super().__init__()
+# class PrescriptionDB(DatabaseHandler):
+#     '''This class manages database operations and Prescription logic'''
+#     def __init__(self):
+#         # Inicjalizujemy klasę bazową DatabaseHandler
+#         super().__init__()
 
 #     def get_presc_id_from_prescription_details(self, pat_id: int, issue_date: date) -> Optional[int]: # czy datetime.datetime?
 
@@ -600,21 +600,20 @@ from config import config_file
 #         # moge zostawic date pusta, pozniej utworzyc obiekt Prescription i tam jus w selfie jest formatowanie daty*
 #         while True:
 
-            # pat_id_input = input('Enter patient id: (or enter space to exit)').strip()
-            # if pat_id_input == ' ':
-            #     Menu.display_menu()
-            #     return None
+#             pat_id_input = input('Enter patient id: (or enter space to exit)').strip()
+#             if pat_id_input == ' ':
+#                 Menu.display_menu()
 
-            # try:
-            #     pat_id = int(pat_id_input)
-            #     if pat_id <= 0:
-            #         print('Patient ID must be a positive number. Try again.')
-            #         continue
-            #     break
-            # except (TypeError, ValueError):
-            #     print('You entered incorrect data. Try again.')
-            #     # return self.get_prescription_details() #  uzytkownik może wpisac ' ' to exit
-            #     continue
+#             try:
+#                 pat_id = int(pat_id_input)
+#                 if pat_id <= 0:
+#                     print('Patient ID must be a positive number. Try again.')
+#                     continue
+#                 break
+#             except (TypeError, ValueError):
+#                 print('You entered incorrect data. Try again.')
+#                 # return self.get_prescription_details() #  uzytkownik może wpisac ' ' to exit
+#                 continue
 
 #         date_option = input('If you want to set prescription issue datepress Y').strip().upper()
 #         if date_option == 'Y':
@@ -666,14 +665,11 @@ from config import config_file
 #             self.connection.commit()
 #         print('Medicines added to prescription.')
 
-
-
-
     
 #     def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> int:
 #         '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
 
-# #         if not prescription_details:
+#         if not prescription_details:
 #             prescription_details = self.get_prescription_details()
 #         pat_id, issue_date = prescription_details
 #         # get new presc_id:
@@ -693,17 +689,14 @@ from config import config_file
 
 #         presc_id = self.get_presc_id_from_prescription_details(pat_id, issue_date)
 
-        # print(f"Prescription id: {presc_id}")
+#         print(f"Prescription id: {presc_id}")
         
-
-
-        # # adding medicines to relational table (n:n)
-        # if not medicines_ids:
-        #     medicines_ids = self.complete_list_of_medicines_id()
-        #     print(f'medicines_ids: {medicines_ids}')
-        # self.add_medicines_to_prescription(presc_id, medicines_ids)
-        # return presc_id
-
+#         # adding medicines to relational table (n:n)
+#         if not medicines_ids:
+#             medicines_ids = self.complete_list_of_medicines_id()
+#             print(f'medicines_ids: {medicines_ids}')
+#         self.add_medicines_to_prescription(presc_id, medicines_ids)
+#         return presc_id 
 
 # class PrescriptionMenu(Menu, PrescriptionDB):
 #     '''This class manages navigation and interface logic related to Patient'''
