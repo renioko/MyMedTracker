@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Flask app{% endblock %}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <h1>My medical app</h1>
+
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Strona główna</a></li>
+                <li><a href="{{ url_for('menu') }}">Menu</a></li>
+                <li><a href="{{ url_for('about') }}">O aplikacji</a></li>
+            </ul>
+        </nav>
+
+        <hr>
+
+        {% block content %}
+        {% endblock %}
+
+    </body>
+</html>

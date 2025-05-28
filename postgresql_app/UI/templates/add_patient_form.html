@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %} Adding patient form {% endblock%}
+
+{% block content %}
+<form method="POST" action="{{ url_for('add_patient') }}">
+    <input type="text" name="first_name" placeholder="Patient's first name"><br>
+    <input type="text" name="last_name" placeholder="Patient's last name"><br>
+    <input type="text" name="email" placeholder="Patient's email"><br>
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}

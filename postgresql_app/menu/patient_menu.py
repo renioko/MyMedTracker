@@ -17,7 +17,7 @@ from repos.patient_medicine_view_repo import Patient_Medicines_ViewDB
 class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB):
     '''This class manages navigation and interface logic related to Patient'''
     
-    def __init__(self, choice_option: int):
+    def __init__(self, choice_option: int, auto_run=True):
         # Inicjalizujemy prawidłowo każdą klasę bazową
         Menu.__init__(self, 0, 0)
         PatientDB.__init__(self)  # To inicjalizuje również DatabaseHandler
@@ -33,7 +33,8 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB):
             7: self.menu_exit
         }        
         # Uruchamiamy od razu wybraną funkcję
-        self.run(choice_option)
+        if auto_run:
+            self.run(choice_option)
     
     def run(self, choice_option):
         """Runs chosen option"""
@@ -45,9 +46,9 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB):
         else:
             print("Invalid option selected.")
 
-    def menu_add_patient(self):
+    def menu_add_patient(self,patient_details=None, verbose=True):
         # PatienDB.add #########
-        self.add_patient_to_database(self)
+        return self.add_patient_to_database(self, patient_details, verbose=True)
 
     def menu_delete_patient(self):
         self.delete_patient()

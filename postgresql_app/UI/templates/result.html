@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<h2>{{ title }}</h2>
+<ul>
+
+    <pre>{{ result }}</pre>
+
+</ul>
+<a href="{{ url_for('menu') }}">Back to menu</a>
+{% endblock %}

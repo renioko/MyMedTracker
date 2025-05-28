@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Medicine menu{% endblock %}
+
+{% block content %}
+<h2>Functions for medicines:</h2>
+<ul>
+    <li><a href="#">Add medicine</a></li>
+    <li><a href="#">Delete medicine</a></li>
+    <li><a href="#">Update medicine</a></li>
+    <li><a href="#">View medicine</a></li>
+    <li><a href="#">Assign medicine</a></li>
+    <li><a href="#">View patients medicines list</a></li>
+</ul>
+<a href="{{url_for('menu')}}">← Powrót do menu głównego</a>
+{% endblock %}

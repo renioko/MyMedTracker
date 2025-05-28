@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient menu{% endblock %}
+
+{% block content %}
+<h2> Functions for patients:</h2>
+<ul>
+    <li><a href="{{ url_for('add_patient') }}">Add patient</a></li>
+    {#<!-- <li><a href="{{ url_for('delete_patient') }}">Delete patient</a></li> -->
+    <!-- <li><a href="{{ url_for('update_patient') }}">Update patient</a></li> -->
+    <!-- <li><a href="{{ url_for('view_patient') }}">View patient</a></li> -->
+    <!-- <li><a href="{{ url_for('assign_patient') }}">Assign patient</a></li> -->
+    <!-- <li><a href="{{ url_for('view_patient_medicines_list') }}">View patient medicines list</a></li> -->#}
+</ul>
+<a href="{{url_for('menu')}}">← Powrót do menu głównego</a>
+{% endblock %}

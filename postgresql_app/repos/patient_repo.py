@@ -75,7 +75,7 @@ class PatientDB(DatabaseHandler, Patient):
         # return result[0] if result else None
 
     @classmethod
-    def add_patient_to_database(cls, self, patient_details: tuple[str, str, str] = None) -> None:
+    def add_patient_to_database(cls, self, patient_details: tuple[str, str, str] = None, verbose: bool=True) -> str:
         if not patient_details:
             patient_details = cls.get_details_to_add_patient()
         try:
@@ -85,12 +85,20 @@ class PatientDB(DatabaseHandler, Patient):
             ''', patient_details            
             )
             self.connection.commit()
-            print('Patient added.')
+            # print('Patient added.')
+            # result = 'Patient added.'
             pat_id = cls.get_pat_id_from_patient_details(self, patient_details)
-            cls.print_patient(self, pat_id)
-            
+            # cls.print_patient(self, pat_id)
+            added_patient_info = cls.print_patient(self,pat_id) # po zmianie przez verbose zwraca str
+            result = f"Patient added. Patient details:\n {added_patient_info}"
+
         except Exception as e:  # Używamy ogólnego Exception zamiast psycopg2.Error
-            print(f'Error occurred while adding new patient: {e}.')
+            # print(f'Error occurred while adding new patient: {e}.')
+            result =  f"Error occurred while adding new patient: {e}."
+
+        if verbose:
+            print(result)
+        return result
 
     def delete_patient(self, pat_id: int = None) -> None:
         if not pat_id:
@@ -149,18 +157,21 @@ class PatientDB(DatabaseHandler, Patient):
             print(f'Error occurred while changing patient details: {e}')
 
     @classmethod
-    def print_patient(cls, self, pat_id=None) -> None:
-        if not pat_id:
+    def print_patient(cls, self, pat_id=None, verbose: bool=True) -> Optional[str]:
+        """Prints patient if verbose = True, else returns str with patient info to print"""
+        if not pat_id and verbose is True:
             pat_id = input('Enter patient id (or empty space to exit): ')
             if pat_id == ' ':
                 print('Exiting the program. Good bye!')
-                sys.exit(0)
+                return None # tu zmieniłam
+        
+
         try:
             pat_id = int(pat_id)
 
         except ValueError:
-            print('Invalid patient ID format. Try again or enter empty space to exit.')
-            return cls.print_patient(self)
+            result = 'Invalid patient ID format. Try again or enter empty space to exit.'
+            # return cls.print_patient(self)
         
         try:
             self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
@@ -168,16 +179,24 @@ class PatientDB(DatabaseHandler, Patient):
             
             if patient_details:
                 patient = Patient(*patient_details)
-                print('\n--PATIENT DETAILS---')
-                print('-id- -first_name- -last_name-------------- --email-------------')
+                # print('\n--PATIENT DETAILS---')
+                # print('-id- -first_name- -last_name-------------- --email-------------')
+                # print(patient)
                 # print(f'{patient_details[0]:^4} {patient_details[1]:12} {patient_details[2]:25}, {patient_details[3]}')
-                print(patient)
+
+                result = f"'\n--PATIENT DETAILS---'\n'-id- -first_name- -last_name-------------- --email-------------'\n{patient}"
+
             else:
-                print(f'No patient found with ID {pat_id}.')
-                return cls.print_patient(self)
+                # print(f'No patient found with ID {pat_id}.')
+                # return cls.print_patient(self)
+                result = f'No patient found with ID {pat_id}.'
 
         except Exception as e:
-            print(f'Error retrieving patient details: {e}')
+            result = f'Error retrieving patient details: {e}'
+
+        if verbose:
+            print(result)
+        return result
 
 
             

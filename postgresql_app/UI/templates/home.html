@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Home page{% endblock %}
+
+{% block content %}
+<h1>Welcome in MyMedTracker homepage!</h1>
+<p>To jest strona główna.</p>
+<p>MyMedTracker is a great app to manage all your medicines and prescriptions.</p>
+
+<ul>
+    <li><a href="{{ url_for('menu') }}">Menu</a></li>
+    <li><a href="{{ url_for('about') }}">O aplikacji</a></li>
+</ul>
+{% endblock %}
