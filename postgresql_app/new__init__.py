@@ -16,7 +16,7 @@ from config import config_file
 
 
 
-# from patiens_repository import PatienDB
+# from patiens_repository import PatientDB
 
 # CO MUSZĘ JESZCZE ZROBIĆ:
 # zmodyfikowac Menu - usunac int (self.choice) ✅
@@ -30,6 +30,7 @@ from config import config_file
 # zmienic nazwy FK np presc_id na pełne prescription_id - postanowilam, że tylko dopisze'Fk' na końcu foreign keys 💡
 # podzial na pliki
 # dodac rollback przy errorach zw z baza danych
+# dodac timestamp zamiast daty do recept 💡
 
 # OBJECTS = {
 #     1: 'Medicine',
