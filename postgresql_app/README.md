@@ -14,36 +14,36 @@
 ## 🗃️ Project Structure
 MyMedTracker/
 
-│
-├──config/
-│ ├── config_file.py
-│
-├── menu/ # Menu logic and interface classes
-│ ├── main_menu.py # tMenu class
-│ ├── medicine_menu.py # MedicineMenu class
-│ ├── patient_menu.py # PatientMenu class
-│ ├── prescription_menu.py # PrescriptionMenu class
-│
-├──models/
-│ ├── models.py # classes: Medicine, Patient, Prescription
-│
-├──repos/
-│ ├── medicine_repo.py
-│ ├── patient_medicine_view_repo.py
-│ ├── patient_repo.py
-│ ├── prescription_repo.py
-│
-├── UI/ # HTML templates and static files
-│ ├── templates/ # Jinja2 template files (e.g., base.html, menu.html)
-│ ├── static/ # JCSS template files (e.g.style.css)
-│
-├── app.py # Main Flask application
-├── database_connection.py  # PostgreSQL database handling
-├── main.py
-├── requirements.txt # List of dependencies
-├── README.md # This file
-├── run.py (will be useful for testing)
-└── utils.py
+  │
+  ├──config/
+  │ ├── config_file.py
+  │
+  ├── menu/ # Menu logic and interface classes
+  │ ├── main_menu.py # tMenu class
+  │ ├── medicine_menu.py # MedicineMenu class
+  │ ├── patient_menu.py # PatientMenu class
+  │ ├── prescription_menu.py # PrescriptionMenu class
+  │
+  ├──models/
+  │ ├── models.py # classes: Medicine, Patient, Prescription
+  │
+  ├──repos/
+  │ ├── medicine_repo.py
+  │ ├── patient_medicine_view_repo.py
+  │ ├── patient_repo.py
+  │ ├── prescription_repo.py
+  │
+  ├── UI/ # HTML templates and static files
+  │ ├── templates/ # Jinja2 template files (e.g., base.html, menu.html)
+  │ ├── static/ # JCSS template files (e.g.style.css)
+  │
+  ├── app.py # Main Flask application
+  ├── database_connection.py  # PostgreSQL database handling
+  ├── main.py
+  ├── requirements.txt # List of dependencies
+  ├── README.md # This file
+  ├── run.py (will be useful for testing)
+  └── utils.py
 
 ## ▶️ Getting Started
 
@@ -53,23 +53,21 @@ MyMedTracker/
    source venv/bin/activate  # or venv\Scripts\activate on Windows
 
 2. Install dependencies:
-
-'''bash'''
-pip install -r requirements.txt
+    '''bash'''
+    pip install -r requirements.txt
 
 1. Run the application:
-
-'''bash'''
-flask run
+    '''bash'''
+    flask run
 
 🧠 Requirements
-- Python 3.9+
+   - Python 3.9+
 
-- PostgreSQL
+   - PostgreSQL
 
-- Flask
+   - Flask
 
-- psycopg2
+   - psycopg2
 
 📌 Project Status
 The project is under active development. Some features may still be in progress.
