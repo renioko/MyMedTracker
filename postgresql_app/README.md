@@ -13,7 +13,7 @@
 
 ## 🗃️ Project Structure
 MyMedTracker/
-<pre> ```plaintext
+<pre> 
   │
   ├──config/
   │ ├── config_file.py
@@ -44,7 +44,7 @@ MyMedTracker/
   ├── README.md # This file
   ├── run.py (will be useful for testing)
   └── utils.py
-``` </pre>
+</pre>
 ## ▶️ Getting Started
 
 1. Create and activate a virtual environment:
@@ -53,12 +53,12 @@ MyMedTracker/
    source venv/bin/activate  # or venv\Scripts\activate on Windows
 
 2. Install dependencies:
-    '''bash'''
-    pip install -r requirements.txt
+    <pre>
+    pip install -r requirements.txt</pre>
 
 1. Run the application:
-    '''bash'''
-    flask run
+    <pre>
+    flask run      </pre>
 
 🧠 Requirements
    - Python 3.9+
