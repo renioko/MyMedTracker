@@ -13,7 +13,7 @@
 
 ## 🗃️ Project Structure
 MyMedTracker/
-
+<pre> ```plaintext
   │
   ├──config/
   │ ├── config_file.py
@@ -44,7 +44,7 @@ MyMedTracker/
   ├── README.md # This file
   ├── run.py (will be useful for testing)
   └── utils.py
-
+``` </pre>
 ## ▶️ Getting Started
 
 1. Create and activate a virtual environment:
