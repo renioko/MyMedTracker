@@ -174,7 +174,7 @@ class PatientDB(DatabaseHandler, Patient):
             # return cls.print_patient(self)
         
         try:
-            self.cursor.execute('SELECT * FROM new_patients WHERE pat_id = %s', (pat_id,))
+            self.cursor.execute('SELECT pat_id, first_name, last_name, email FROM new_patients WHERE pat_id = %s', (pat_id,))
             patient_details = self.cursor.fetchone()
             
             if patient_details:
