@@ -66,6 +66,20 @@ class Patient: # zaczac uzywac w princie!!
         patients.append(self)
         print('Patient added.')
 
+@dataclass
+class Patient_View:
+    pat_id: int 
+    username: str
+    first_name: str 
+    last_name: str 
+    email: str
+    emergency_contact: str
+    medical_info: str
+
+    def __str__(self):
+        return (f'PATIENT DETAILS: \n PAT_ID: {self.pat_id:^4}\n USERNAME: {self.username:^10}\ FIRST NAME: {self.first_name: 12}\n  LAST NAME: {self.last_name: 14}\n EMAIL: {self.email:^22} EMERGENCY CONTACT:{self.emergency_contact: 20}\n MEDICAL INFO:{self.medical_info}')
+    
+
 @ dataclass
 class Patient_Medicines_View:
     pat_id: int 
@@ -78,6 +92,27 @@ class Patient_Medicines_View:
     def __post_init__(self):
         # Tu mozna by dodac jakas logikę po inicjalizacji, np. formatowanie daty
         pass
+
+@dataclass
+class User:
+    user_id: int
+    username: str
+    email: str
+    password_hash: str
+    role_id: int
+    first_name: str
+    last_name: str
+    is_active: bool
+    created_at: datetime
+    last_login: datetime
+
+    def __str__(self):
+        roles = {1: 'patient', 2: 'professional', 3: 'admin'}
+        role = roles.get(self.role_id)
+        # print('USER DETAILS:')
+        # print('-ID- ----USERNAME- -----EMAIL------------  ---ROLE------- -FIRST_NAME- --LAST_NAME--------')
+        # print(f'{self.user_id :^4} {self.username :^13} {self.email :^22} {role :^14} {self.first_name :12} {self.last_name}')
+        return(f'USER DETAILS:\n -ID- ----USERNAME- -----EMAIL------------  ---ROLE------- -FIRST_NAME- --LAST_NAME--------\n {self.user_id :^4} {self.username :^13} {self.email :^22} {role :^14} {self.first_name :12} {self.last_name}')
 
 @ dataclass
 class Prescription:
