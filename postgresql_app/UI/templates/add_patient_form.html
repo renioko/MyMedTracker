@@ -4,9 +4,22 @@
 
 {% block content %}
 <form method="POST" action="{{ url_for('add_patient') }}">
+    <input type="text" name="username" placeholder="Patient's username"><br>
+    <input type="text" name="email" placeholder="Patient's email"><br>
+    <input type="text" name="password" placeholder="Patient's password"><br>
     <input type="text" name="first_name" placeholder="Patient's first name"><br>
     <input type="text" name="last_name" placeholder="Patient's last name"><br>
-    <input type="text" name="email" placeholder="Patient's email"><br>
+    
+    <select name="role_id">
+        <option value="">Select role</option>
+        <option value="1">Patient</option>
+        <option value="2">Professional</option>
+        <option value="3">Administrator</option>
+    </select><br>
+
+    <input type="text" name="emergency_contact" placeholder="Patient's emergency contact"><br>
+    <input type="text" name="medical_info" placeholder="Patient's medical info"><br>
+    
     <input type="submit" value="Submit">
 </form>
 {% endblock %}

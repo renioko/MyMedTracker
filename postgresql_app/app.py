@@ -23,11 +23,17 @@ def patient():
 
 @app.route("/patient/add_patient", methods=["GET", "POST"])
 def add_patient():
+    # username, email, password, first_name, last_name, role_id, emergency_contact, medical_info
     if request.method == "POST":
         patient_details = (
+            request.form.get("username"), #
+            request.form.get("email"),
+            request.form.get("password"), #
             request.form.get("first_name"),
             request.form.get("last_name"),
-            request.form.get("email")
+            request.form.get("role_id"), #
+            request.form.get("emergency_contact"), #
+            request.form.get("medical_info") #
         )
         patient_menu = PatientMenu(0, auto_run=False)
         result = patient_menu.menu_add_patient(patient_details, verbose=False)
