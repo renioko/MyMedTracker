@@ -32,7 +32,7 @@ class UserDB(DatabaseHandler, User):
         """Correct role_id will be True."""
         try:
             role_id = int(role_id)
-            if role_id in range(1, 4):
+            if role_id in [1, 2, 3]:
                 return True
             else:
                 return False
@@ -47,7 +47,7 @@ class UserDB(DatabaseHandler, User):
         password_hash = password_hash.decode('utf-8')
         return password_hash
 
-    def check_user_details(self, username: str, email: str, password: str, first_name: str, last_name: str, role_id: int) -> Tuple[str, str, str, str, str, int]|None:
+    def check_user_details(self, username: str, email: str, password: str,  role_id: int, first_name: str, last_name: str) -> Tuple[str, str, str, str, str, int]|None:
         username_taken = self.check_username_taken(username)
         if username_taken:
             print('Username taken.')
@@ -57,36 +57,38 @@ class UserDB(DatabaseHandler, User):
             print('Invalid email.')
             return None
         password_hash = self.generate_password_hash(password)
+        if not self.correct_user_role(role_id):
+            return None
         if not first_name.isalpha():
             print('Incorrect first name.')
             return None
         if not last_name.isalpha():
             print('Incorrect surname.')
             return None
-        if not self.correct_user_role(role_id):
-            return None
-        return username, email, password_hash, first_name, last_name, role_id
+
+        return username, email, password_hash, role_id, first_name, last_name
 
 
-    def add_user_to_database(self, username, email, password_hash, role_id, first_name, last_name) -> None:
+    def add_user_to_database(self, username, email, password, role_id, first_name, last_name) -> None:
         # user = User()
-        user_data = self.check_user_details(username, email, password_hash, role_id, first_name, last_name)
+        user_data = self.check_user_details(username, email, password, role_id, first_name, last_name)
         if user_data:
             username, email, password_hash, role_id, first_name, last_name = user_data
             self.cursor.execute('''
         INSERT INTO users (username, email, password_hash, role_id, first_name, last_name) 
         VALUES (%s, %s, %s, %s, %s, %s)''', (username, email, password_hash, role_id, first_name, last_name))
-        self.connection.commit()
+        # self.connection.commit()
         print('User added to database.')
 
-    def get_user_id(self, username:str, email:str) -> Optional[int]:
+    def get_user_id(self, username:str) -> Optional[int]:
         try:
             self.cursor.execute('''
-        SELECT user_id from users WHERE username = %s AND email = %s''', (username, email))
+        SELECT user_id from users WHERE username = %s''', (username,))
             result = self.cursor.fetchone()
             if result:
                 user_id = int(result[0])
                 print(f'User id: {user_id}')
+                return user_id
             else:
                 print('User not found')
                 return None

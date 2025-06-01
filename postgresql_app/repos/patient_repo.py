@@ -59,15 +59,22 @@ class PatientDB(DatabaseHandler, Patient):
             print('This username is free.')
             return False
 
-    @staticmethod
+    
     def get_details_to_add_patient(self) -> Tuple[str, str, str, int, str, str, str, str]:
         """Takes standars user details and adds details specific for patients."""
-        username, email, password, role_id, first_name, last_name = UserDB.get_user_details()
-        username, email, password_hash, role_id, first_name, last_name = UserDB.check_user_details(username, email, password_hash, role_id, first_name, last_name)
-        #nowe:
+        user_db = UserDB()
+        username, email, password, first_name, last_name, role_id = user_db.get_user_details()
+
+        pat_details = user_db.check_user_details(username, email, password, role_id, first_name, last_name) #dodałam self w nawiasie
+        if not pat_details:
+            print('Invalid user details.')
+            return None
+        username, email, password_hash, role_id, first_name, last_name = pat_details
+
+        #additional for patients:
         emergency_contact = input('Enter emergency contact name and number: ')
         medical_info = input('Enter important medical informations: ')
-        username = input('Enter username: ')
+
         patient_details = username, email, password_hash, role_id, first_name, last_name, emergency_contact, medical_info
         return patient_details
     
@@ -97,6 +104,7 @@ class PatientDB(DatabaseHandler, Patient):
         try:
             UserDB.add_user_to_database(username, email, password_hash, role_id, first_name, last_name)
             # result = 'User added.'
+            self.connection.commit()
         except Exception as e:  
             print(f'Error occurred while adding new user: {e}.')
             # result =  f"Error occurred while adding new user: {e}."
@@ -119,28 +127,63 @@ class PatientDB(DatabaseHandler, Patient):
             print(result)
         return result
 
-# ========================
-    def add_patient_and_user(self, user_details: Tuple[str, str, int] , patient_details: Tuple[str, str, str, str, str] = None, verbose: bool = True) -> None:
+######
+    def add_patient_and_user_one_connection(self, patient_details: Tuple[str, str, str, str, str] = None, verbose: bool = True) -> Optional[str]:
+        """Takes patients (user details included) if those details are not provided. Adds user to database, returns user_id then adds all patients details to new_patients table. Returns string with user_id and patient_id."""
         if not patient_details:
             patient_details = self.get_details_to_add_patient()
         username, email, password_hash, role_id, first_name, last_name, emergency_contact, medical_info = patient_details
-        try:
-            UserDB.add_user_to_database(username, email, password_hash, role_id, first_name, last_name)
-        except Exception as e:  
-            print(f'Error occurred while adding new user: {e}.')
-        user_id = UserDB.get_user_id(username, email)
+
         try:
             self.cursor.execute('''
-            INSERT INTO new_patients (user_id, emergency_contact, medical_info)
-            VALUES (%s, %s)'''(user_id, emergency_contact, medical_info))
+        INSERT INTO users (username, email, password_hash, role_id, first_name, last_name)
+        VALUES (%s, %s, %s, %s, %s, %s)''', (username, email, password_hash, role_id, first_name, last_name))
+            if verbose:
+                print('User added.')
+        
+            self.cursor.execute('''
+        SELECT user_id FROM users WHERE username = %s''', (username,))
+            user_id = self.cursor.fetchone()[0]
+
+            if not user_id:
+                raise Exception('Could not get user_id.')
+            
+            if verbose:
+                print(f'User id: {user_id}')
+            
+            self.cursor.execute('''
+        INSERT INTO new_patients (user_id, emergency_contact, medical_info, medical_notes)
+        VALUES (%s, %s, %s, %s)''', (user_id, emergency_contact, medical_info, 'initial note'))
+            
+            self.connection.commit()
+
+            if verbose:
+                print('Patient added to database.')
         except Exception as e:
-            print(f'Error occurred while adding new patient: {e}.')()
-        pat_id = self.get_pat_id_from_user_id(self, user_id)
+            self.connection.rollback()
+            print(f'Error occurred while adding patient user: {e}.')
+            return None
+        
+        try:
+            self.cursor.execute('''
+        SELECT pat_id FROM new_patients WHERE user_id = %s''', (user_id,))
+            pat_id = self.cursor.fetchone()[0]
+            if not pat_id:
+                raise Exception('Could not get pat_id.')
+            
+            if verbose:
+                print(f'Patient id: {pat_id}')
 
-        patient_info_view = self.get_patient_view(user_id)
-        print(patient_info_view)
+            patient_view = self.get_patient_view(pat_id)
+            if verbose:
+                print(patient_view)
+        except Exception as e:
+            print(f'Error getting patient view: {e}.')
 
-# ========================
+        result = f'Patient user added succesfully and user account creadet. User id: {user_id}.'
+        if verbose:
+            print(result)
+        return result
 
 
     def delete_patient(self, pat_id: int = None) -> None:
@@ -199,10 +242,10 @@ class PatientDB(DatabaseHandler, Patient):
         except Exception as e:
             print(f'Error occurred while changing patient details: {e}')
 
-    def get_patient_view(self, user_id):
+    def get_patient_view(self, pat_id):
         from models import Patient_View
         self.cursor.execute('''
-        SELECT * FROM patient_view WHERE user_id = %s''', (user_id,))
+        SELECT * FROM patient_view WHERE pat_id = %s''', (pat_id,))
         result = self.cursor.fetchone()
         if result:
             patient_view = Patient_View(*result)
@@ -221,6 +264,8 @@ class PatientDB(DatabaseHandler, Patient):
             if pat_id == ' ':
                 print('Exiting the program. Good bye!')
                 return None # tu zmieniłam
+        
+
         try:
             pat_id = int(pat_id)
 
@@ -229,7 +274,7 @@ class PatientDB(DatabaseHandler, Patient):
             # return cls.print_patient(self)
         
         try:
-            self.cursor.execute('SELECT * FROM patient_view WHERE pat_id = %s', (pat_id,)) #new_patients
+            self.cursor.execute('SELECT pat_id, first_name, last_name, email FROM new_patients WHERE pat_id = %s', (pat_id,))
             patient_details = self.cursor.fetchone()
             
             if patient_details:

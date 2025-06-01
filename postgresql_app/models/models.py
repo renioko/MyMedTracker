@@ -77,7 +77,15 @@ class Patient_View:
     medical_info: str
 
     def __str__(self):
-        return (f'PATIENT DETAILS: \n PAT_ID: {self.pat_id:^4}\n USERNAME: {self.username:^10}\ FIRST NAME: {self.first_name: 12}\n  LAST NAME: {self.last_name: 14}\n EMAIL: {self.email:^22} EMERGENCY CONTACT:{self.emergency_contact: 20}\n MEDICAL INFO:{self.medical_info}')
+        return (f"""PATIENT DETAILS:
+============================================
+PAT_ID: {self.pat_id}
+USERNAME: {self.username}
+FIRST NAME: {self.first_name}
+LAST NAME: {self.last_name}
+EMAIL: {self.email}
+EMERGENCY CONTACT: {self.emergency_contact}
+MEDICAL INFO: {self.medical_info}""")
     
 
 @ dataclass

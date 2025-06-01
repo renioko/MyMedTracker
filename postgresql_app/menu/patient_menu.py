@@ -13,8 +13,9 @@ from config import config_file
 from menu.main_menu import Menu
 from repos.patient_repo import PatientDB
 from repos.patient_medicine_view_repo import Patient_Medicines_ViewDB
+from repos.user_repo import UserDB
 
-class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB):
+class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB, UserDB):
     '''This class manages navigation and interface logic related to Patient'''
     
     def __init__(self, choice_option: int, auto_run=True):
@@ -46,9 +47,10 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB):
         else:
             print("Invalid option selected.")
 
-    def menu_add_patient(self,patient_details=None, verbose=True):
+    def menu_add_patient(self, patient_details=None, verbose=True):
         # PatienDB.add #########
-        return self.add_patient_to_database(self, patient_details, verbose=True)
+        # return self.add_patient_to_database(self, patient_details, verbose=True)
+        return self.add_patient_and_user_one_connection(patient_details, verbose)
 
     def menu_delete_patient(self):
         self.delete_patient()
