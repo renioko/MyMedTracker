@@ -29,14 +29,15 @@ def add_patient():
             request.form.get("username"), #
             request.form.get("email"),
             request.form.get("password"), #
+            request.form.get("role_id"), #
             request.form.get("first_name"),
             request.form.get("last_name"),
-            request.form.get("role_id"), #
             request.form.get("emergency_contact"), #
             request.form.get("medical_info") #
         )
         patient_menu = PatientMenu(0, auto_run=False)
         result = patient_menu.menu_add_patient(patient_details, verbose=False)
+        # result = patient_menu.add_patient_and_user_one_connection(patient_details, verbose=False)
         return render_template("result.html", title='Adding patient', result=result)
     return render_template("add_patient_form.html")
 

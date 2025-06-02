@@ -128,12 +128,12 @@ class PatientDB(DatabaseHandler, Patient):
         return result
 
 ######
-    def add_patient_and_user_one_connection(self, patient_details: Tuple[str, str, str, str, str] = None, verbose: bool = True) -> Optional[str]:
+    def add_patient_and_user_one_connection(self, patient_details: Tuple[str, str, str, int, str, str, str, str] = None, verbose: bool = True) -> Optional[str]:
         """Takes patients (user details included) if those details are not provided. Adds user to database, returns user_id then adds all patients details to new_patients table. Returns string with user_id and patient_id."""
         if not patient_details:
             patient_details = self.get_details_to_add_patient()
         username, email, password_hash, role_id, first_name, last_name, emergency_contact, medical_info = patient_details
-
+        role_id = int(role_id)# nowa rzecz
         try:
             self.cursor.execute('''
         INSERT INTO users (username, email, password_hash, role_id, first_name, last_name)
