@@ -180,7 +180,7 @@ class PatientDB(DatabaseHandler, Patient):
         except Exception as e:
             print(f'Error getting patient view: {e}.')
 
-        result = f'Patient user added succesfully and user account creadet. User id: {user_id}.'
+        result = f'Patient added succesfully and user account creaded. User id: {user_id}, patient id: {pat_id}.'
         if verbose:
             print(result)
         return result
@@ -242,7 +242,7 @@ class PatientDB(DatabaseHandler, Patient):
         except Exception as e:
             print(f'Error occurred while changing patient details: {e}')
 
-    def get_patient_view(self, pat_id):
+    def get_patient_view(self, pat_id) -> str:
         from models import Patient_View
         self.cursor.execute('''
         SELECT * FROM patient_view WHERE pat_id = %s''', (pat_id,))
@@ -251,11 +251,11 @@ class PatientDB(DatabaseHandler, Patient):
             patient_view = Patient_View(*result)
         else:
             print('Patient not found.')
-            patient_view = '...'
+            patient_view = 'Patient not found.'
         # print(patient_view)
         return patient_view
 
-
+# print patient will not longer work. use print_patient_view instead
     @classmethod
     def print_patient(cls, self, pat_id=None, verbose: bool=True) -> Optional[str]:
         """Prints patient if verbose = True, else returns str with patient info to print"""

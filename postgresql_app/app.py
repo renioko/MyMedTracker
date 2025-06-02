@@ -41,9 +41,16 @@ def add_patient():
         return render_template("result.html", title='Adding patient', result=result)
     return render_template("add_patient_form.html")
 
-# @app.route("/add_patient_form")
-# def add_patient_form():
-#     return render_template("add_patient_form.html")
+@app.route("/patient/view_patient", methods=["GET", "POST"])
+def view_patient():
+    if request.method == "POST":
+        pat_id = (
+            request.form.get("pat_id")
+        )
+        patient_menu = PatientMenu(0, auto_run=False)
+        result = patient_menu.get_patient_view(pat_id)
+        return render_template("result.html", title="Patient view:", result=result)
+    return render_template("get_patient_id_form.html")
 
 @app.route("/medicine")
 def medicine():

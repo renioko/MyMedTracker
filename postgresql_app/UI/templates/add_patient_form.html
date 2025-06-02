@@ -5,8 +5,8 @@
 {% block content %}
 <form method="POST" action="{{ url_for('add_patient') }}">
     <input type="text" name="username" placeholder="Patient's username"><br>
-    <input type="text" name="email" placeholder="Patient's email"><br>
-    <input type="text" name="password" placeholder="Patient's password"><br>
+    <input type="email" name="email" placeholder="Patient's email"><br>
+    <input type="password" name="password" placeholder="Patient's password"><br>
         <select name="role_id">
         <option value="">Select role</option>
         <option value="1">Patient</option>

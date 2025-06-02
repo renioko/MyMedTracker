@@ -59,7 +59,8 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB, UserDB):
         self.alter_patient_details_in_db(self)
 
     def menu_print_patient(self):
-        self.print_patient(self)
+        # self.print_patient(self)
+        self.get_patient_view(pat_id=None)
 
     def menu_assign_patient(self): # nie działa
         print("Asign not working write now. Sorry")
