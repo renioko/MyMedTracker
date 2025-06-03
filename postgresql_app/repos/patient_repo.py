@@ -216,17 +216,16 @@ class PatientDB(DatabaseHandler, Patient):
         else:
             print('Deleting aborted.')
 
-    @classmethod
+
     # changed pat_id to user_id
-    def alter_patient_details_in_db(cls, self, user_id: int = None, column_to_change: str = None, new_details: str = None, verbose: bool = True) -> None:
-        if user_id is None or column_to_change is None or new_details is None:
-            try:
-                user_id = int(input('Enter user id: '))
-            except ValueError:
-                print('Id must be a number. Try again.')
-                return
-                
+    def alter_patient_details_in_db(self, user_id: int = None, column_to_change: str = None, new_details: str = None, verbose: bool = True) -> None:
         if verbose:
+            if user_id is None or column_to_change is None or new_details is None:
+                try:
+                    user_id = int(input('Enter user id: '))
+                except ValueError:
+                    print('Id must be a number. Try again.')
+                    return
             column_to_change = input('What column you want to change? Enter 1 for "first_name", 2 for "last_name", 3 for "email" or 4 for"password": ')
             new_details = input('Enter a new value: ')
             if column_to_change == '1':
@@ -237,8 +236,8 @@ class PatientDB(DatabaseHandler, Patient):
                 column_to_change = 'email'
             elif column_to_change == '4':
                 column_to_change = 'password_hash'
-                password = UserDB.generate_password_hash(self, new_details)
-                new_details = password
+                # password = UserDB.generate_password_hash(self, new_details)
+                # new_details = password
             else:
                 print('invalid choice')
 
@@ -249,11 +248,17 @@ class PatientDB(DatabaseHandler, Patient):
         #     print('Invalid column name.')
         #     return None
             
+        user_id = int(user_id)
+            
         if column_to_change in allowed_columns1:
             table = 'users'
         elif column_to_change in allowed_columns2:
             table = 'new_patients'
                 
+        if column_to_change == "password_hash":
+            password = UserDB.generate_password_hash(self, new_details)
+            new_details = password
+
         try:
             query = f'''
             UPDATE {table} SET {column_to_change} = %s
@@ -263,8 +268,8 @@ class PatientDB(DatabaseHandler, Patient):
             self.connection.commit()
             print('Patient detail changed. New details:')
             # cls.print_patient(self, pat_id)
-            pat_id = cls.get_pat_id_from_user_id(self, user_id)
-            patient_view = cls.get_patient_view(self, pat_id)
+            pat_id = self.get_pat_id_from_user_id(self, user_id)
+            patient_view = self.get_patient_view(pat_id)
             if verbose:
                 print('Patient details updated. New details:')
                 print(patient_view)

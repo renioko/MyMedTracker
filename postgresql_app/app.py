@@ -52,6 +52,18 @@ def view_patient():
         return render_template("result.html", title="Patient view:", result=result)
     return render_template("get_patient_id_form.html")
 
+@app.route("/patient/alter_patient_details", methods=["GET", "POST"])
+def alter_patient_details():
+    if request.method == "POST":
+        user_id = (request.form.get("user_id"))
+        column_to_change = (request.form.get("column_to_change"))
+        new_details = (request.form.get("new_details"))
+        patient_menu = PatientMenu(0, auto_run=False)
+        result = patient_menu.alter_patient_details_in_db(user_id, column_to_change, new_details, verbose=False)
+        # result = patient_menu.menu_alter_patient_details()
+        return render_template("result.html", title="Patient view", result=result)
+    return render_template("get_patient_details_to_change.html")
+
 @app.route("/medicine")
 def medicine():
     return render_template("medicine_menu.html")

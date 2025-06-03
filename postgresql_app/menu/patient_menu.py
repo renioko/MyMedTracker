@@ -56,7 +56,7 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB, UserDB):
         self.delete_patient()
 
     def menu_alter_patient_details(self):
-        self.alter_patient_details_in_db(self)
+        self.alter_patient_details_in_db(user_id=None, column_to_change=None, new_details=None, verbose=True)
 
     def menu_print_patient(self):
         # self.print_patient(self)

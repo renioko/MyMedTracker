@@ -1,0 +1,33 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Get patient details to change{% endblock %}
+
+{% block content %}
+
+<h2>Change Patient Details</h2>
+
+<form method="POST" action="{{ url_for('alter_patient_details') }}">
+    
+    <label for="user_id">User ID:</label><br>
+    <input type="number" name="user_id" placeholder="Enter user ID" required><br><br>
+    
+    <label for="column_to_change">Select field to change:</label><br>
+    <select name="column_to_change" required>
+        <option value="">-- Select column to change --</option>
+        <option value="first_name">First name</option>
+        <option value="last_name">Last name</option>
+        <option value="email">Email</option>
+        <option value="password_hash">Password</option>
+        <option value="emergency_contact">Emergency contact</option>
+        <option value="medical_info">Medical info</option>
+    </select><br><br>
+    
+    <label for="new_details">New value:</label><br>
+    <input type="text" name="new_details" placeholder="Enter new value" required><br><br>
+    
+    <input type="submit" value="Update Patient Details">
+    
+</form>
+
+{% endblock %}
