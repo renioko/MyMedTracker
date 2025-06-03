@@ -69,7 +69,7 @@ class UserDB(DatabaseHandler, User):
         return username, email, password_hash, role_id, first_name, last_name
 
 
-    def add_user_to_database(self, username, email, password, role_id, first_name, last_name) -> None:
+    def add_user_to_database(self, username, email, password, role_id: int, first_name, last_name) -> None:
         # user = User()
         user_data = self.check_user_details(username, email, password, role_id, first_name, last_name)
         if user_data:
@@ -80,7 +80,7 @@ class UserDB(DatabaseHandler, User):
         # self.connection.commit()
         print('User added to database.')
 
-    def get_user_id(self, username:str) -> Optional[int]:
+    def get_user_id(self, username: str) -> Optional[int]:
         try:
             self.cursor.execute('''
         SELECT user_id from users WHERE username = %s''', (username,))
@@ -96,18 +96,21 @@ class UserDB(DatabaseHandler, User):
             print('User not found.')
             return None
 
-    def delete_user(self, user_id, confirmation=False) -> None:
-        if not confirmation:
+    def delete_user(self, user_id: int, confirmation: bool =False, verbose: bool = True) -> None:
+        if not confirmation and verbose:
             confirm = input(f'Do you want to delete user with id: {user_id}? Press Y for Yes.')
             if confirm.upper() == 'Y':
                 confirmation = True
+        elif not confirmation:
+            return None
         if confirmation:
             self.cursor.execute('''
             DELETE FROM users WHERE user_id = %s ''', (user_id,))
             self.connection.commit()
             print('User deleted.')
+            return "User deleted"
 
-    def update_user(self, user_id, update_column=None, update_value=None) -> None:
+    def update_user(self, user_id: int, update_column: str =None, update_value: str =None) -> None:
         if not update_column:
             choice= input('Choose which column to update:\n '
             'Press 1 for email.\n'

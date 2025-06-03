@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Deleting patient user {% endblock %}
+
+{% block content %}
+
+<h1>Deleting patient</h1>
+<h2>You are about to delete patient user</h2>
+<form method="POST" action="{{url_for('delete_patient')}}">
+    <label>
+        <input type="checkbox" name="confirmation">
+        I want to delete patient user.
+    </label><br>
+    <input type="number" name="user_id" Placeholder="User id: "><br>
+    <input type="submit" value="Submit"><br>
+</form>
+
+<a href="{{url_for('menu')}}">Back to menu</a>
+
+{% endblock %}

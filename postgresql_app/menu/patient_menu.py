@@ -26,10 +26,10 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB, UserDB):
         
         self.menu_functions = {
             1: self.menu_add_patient,
-            2: self.menu_delete_patient,
+            2: self.menu_delete_patient_user,
             3: self.menu_alter_patient_details,
             4: self.menu_print_patient,
-            5: self.menu_assign_patient,
+            5: self.menu_assign_patient, # not working
             6: self.menu_view_patient_medicines,
             7: self.menu_exit
         }        
@@ -52,8 +52,9 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB, UserDB):
         # return self.add_patient_to_database(self, patient_details, verbose=True)
         return self.add_patient_and_user_one_connection(patient_details, verbose)
 
-    def menu_delete_patient(self):
-        self.delete_patient()
+    def menu_delete_patient_user(self, user_id=0, confirmation=False):
+        """Really it deletes user"""
+        self.delete_user(user_id=0, confirmation=False)
 
     def menu_alter_patient_details(self):
         self.alter_patient_details_in_db(user_id=None, column_to_change=None, new_details=None, verbose=True)

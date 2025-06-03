@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import  Flask, render_template, request
 from menu.patient_menu import PatientMenu
 import os
 
@@ -16,6 +16,10 @@ def about():
 @app.route("/menu")
 def menu():
     return render_template("menu.html")
+
+@app.route("/result")
+def result():
+    return render_template("result.html")
 
 @app.route("/patient")
 def patient():
@@ -52,7 +56,8 @@ def view_patient():
         return render_template("result.html", title="Patient view:", result=result)
     return render_template("get_patient_id_form.html")
 
-@app.route("/patient/alter_patient_details", methods=["GET", "POST"])
+@app.route("/patient/alter_patient_details", methods=["GET", "POST"]) 
+# not restful = should be PATCH or PUT
 def alter_patient_details():
     if request.method == "POST":
         user_id = (request.form.get("user_id"))
@@ -64,6 +69,27 @@ def alter_patient_details():
         return render_template("result.html", title="Patient view", result=result)
     return render_template("get_patient_details_to_change.html")
 
+@app.route("/patient/delete_patient", methods=["GET", "POST"])
+def delete_patient():
+    if request.method == "POST":
+        user_id = (request.form.get("user_id"))
+        confirmation = (request.form.get("confirmation"))
+        if not confirmation:
+            result = 'If you want to delete user, confirmation is needed'
+        else:
+            try: 
+                user_id = int(user_id)
+            except ValueError:
+                result = "Invalid user id."
+        patient_menu = PatientMenu(0, auto_run=False)
+        # result = patient_menu.menu_delete_patient_user(user_id, confirmation)
+        result = patient_menu.delete_user(user_id, confirmation)
+        return render_template("result.html", title="Delete patient", result=result)
+    return render_template("get_patient_id_and_confirmation_to_delete_form.html")
+
+
+
+
 @app.route("/medicine")
 def medicine():
     return render_template("medicine_menu.html")
@@ -72,9 +98,7 @@ def medicine():
 def prescription():
     return render_template("prescription_menu.html")
 
-@app.route("/result")
-def result():
-    return render_template("result.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True) # tryb deweloperski: automatyczny reload + błędy pokazują się na stronie.
