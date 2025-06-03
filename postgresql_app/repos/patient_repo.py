@@ -82,7 +82,7 @@ class PatientDB(DatabaseHandler, Patient):
     def get_pat_id_from_user_id(cls, self, user_id: int) -> int | None:
         self.cursor.execute('''
         SELECT pat_id FROM new_patients
-        WHERE user_id = %s ''', user_id)
+        WHERE user_id = %s ''', (user_id,))
         result = self.cursor.fetchone() # zwraca krotkę
         if result:
             try:
@@ -120,9 +120,6 @@ class PatientDB(DatabaseHandler, Patient):
             # cls.print_patient(self, pat_id)
         added_patient_info = cls.print_patient(self,pat_id) # po zmianie przez verbose zwraca str
         result = f"Patient added. Patient details:\n {added_patient_info}"
-
-
-
         if verbose:
             print(result)
         return result
@@ -133,7 +130,13 @@ class PatientDB(DatabaseHandler, Patient):
         if not patient_details:
             patient_details = self.get_details_to_add_patient()
         username, email, password_hash, role_id, first_name, last_name, emergency_contact, medical_info = patient_details
-        role_id = int(role_id)# nowa rzecz
+        try:
+            role_id = int(role_id)# nowa rzecz
+        except TypeError:
+            if verbose:
+                print('Incorrect role id type.')
+            return None
+        
         try:
             self.cursor.execute('''
         INSERT INTO users (username, email, password_hash, role_id, first_name, last_name)
@@ -214,35 +217,65 @@ class PatientDB(DatabaseHandler, Patient):
             print('Deleting aborted.')
 
     @classmethod
-    def alter_patient_details_in_db(cls, self, pat_id: int = None, column_to_change: str = None, new_details: str = None) -> None:
-        if pat_id is None or column_to_change is None or new_details is None:
+    # changed pat_id to user_id
+    def alter_patient_details_in_db(cls, self, user_id: int = None, column_to_change: str = None, new_details: str = None, verbose: bool = True) -> None:
+        if user_id is None or column_to_change is None or new_details is None:
             try:
-                pat_id = int(input('Enter patients id: '))
+                user_id = int(input('Enter user id: '))
             except ValueError:
                 print('Id must be a number. Try again.')
                 return
                 
-            allowed_columns = ['first_name', 'last_name', 'email']
-            column_to_change = input('What column you want to change? Enter "first_name", "last_name" or "email": ')
-            if column_to_change not in allowed_columns:
-                print('Invalid column name.')
-                return
-                
+        if verbose:
+            column_to_change = input('What column you want to change? Enter 1 for "first_name", 2 for "last_name", 3 for "email" or 4 for"password": ')
             new_details = input('Enter a new value: ')
+            if column_to_change == '1':
+                column_to_change = 'first_name'
+            elif column_to_change == '2':
+                column_to_change = 'last_name'
+            elif column_to_change == '3':
+                column_to_change = 'email'
+            elif column_to_change == '4':
+                column_to_change = 'password_hash'
+                password = UserDB.generate_password_hash(self, new_details)
+                new_details = password
+            else:
+                print('invalid choice')
+
+        allowed_columns1 = ['first_name', 'last_name', 'email', 'password_hash', ]
+        allowed_columns2 = ['emergency_contact', 'medical_info']
+
+        # if column_to_change not in allowed_columns1 or allowed_columns2:
+        #     print('Invalid column name.')
+        #     return None
             
+        if column_to_change in allowed_columns1:
+            table = 'users'
+        elif column_to_change in allowed_columns2:
+            table = 'new_patients'
+                
         try:
             query = f'''
-            UPDATE new_patients SET {column_to_change} = %s
-            WHERE pat_id = %s
+            UPDATE {table} SET {column_to_change} = %s
+            WHERE user_id = %s;
             '''
-            self.cursor.execute(query, (new_details, pat_id))
+            self.cursor.execute(query, (new_details, user_id))
             self.connection.commit()
             print('Patient detail changed. New details:')
-            cls.print_patient(self, pat_id)
+            # cls.print_patient(self, pat_id)
+            pat_id = cls.get_pat_id_from_user_id(self, user_id)
+            patient_view = cls.get_patient_view(self, pat_id)
+            if verbose:
+                print('Patient details updated. New details:')
+                print(patient_view)
+            return f'Patient details updated. New details:\n{str(patient_view)}'
         except Exception as e:
-            print(f'Error occurred while changing patient details: {e}')
+            if verbose:
+                print(f'Error occurred while changing patient details: {e}')
+            return f'Error occurred while changing patient details: {e}'
 
-    def get_patient_view(self, pat_id) -> str:
+
+    def get_patient_view(self, pat_id: int) -> str:
         from models import Patient_View
         self.cursor.execute('''
         SELECT * FROM patient_view WHERE pat_id = %s''', (pat_id,))
