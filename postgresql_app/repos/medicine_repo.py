@@ -38,13 +38,33 @@ class MedicineDB(DatabaseHandler, Medicine):
             print(f'Error occurred: {e}.')
             return f'Error occurred: {e}.'
 
+    def get_medicine_by_id(self, med_id: int =None) -> Medicine|None:
+            """Uses medicine name to search in database for given medicine and loads medicine id, name, dosage, quantity and description."""
+            if not med_id:
+                med_id = input('Enter medicine id:')
+            
+            try:
+                self.cursor.execute("""
+                SELECT med_id, med_name, dosage, quantity, description FROM new_medicines
+                WHERE med_id = %s""", (med_id,))
+                result = self.cursor.fetchone()
+                if result:
+                    # med_id, med_name, dosage, quantity, description = result
+                    medicine = Medicine(*result)
+                    return medicine
+                else:
+                    print('Medicine not found.')
+                    return 'Medicine not found.'
+            except Exception as e:
+                print(f'Error occurred: {e}.')
+                return f'Error occurred: {e}.'
 
     def load_medicines(self) -> list[Medicine]:
         pass
 
     def print_medicine(self, medicine) -> None:
         pass
-    
+
     def add_medicine_to_database(self, med_name:str, dosage: str, quantity:int =0, description: str =None) -> str:
         """Adds medicine to database and returns string with statement."""
         self.cursor.execute("""
@@ -56,7 +76,26 @@ class MedicineDB(DatabaseHandler, Medicine):
 
         medicine = self.get_medicine(med_name)
         if medicine:
-            return f"Medicine added to database with id: {medicine.med_id}.\n {str(Medicine)}"
+            return f"Medicine added to database with id: {medicine.med_id}.\n {str(medicine)}" #str medicine nie dzisała :/
         else:
             return "Something is wrong. Medicine details could not be retrieved."
         
+    def delete_medicine(self, med_id):
+        try:
+            med_id = int(med_id)
+        except ValueError:
+            return 'Invalid medicine id.'
+        try:
+            self.cursor.execute('''
+            DELETE FROM new_medicines WHERE med_id = %s''', (med_id,))
+            self.connection.commit()
+            # return 'Medicine deleted.'
+        
+        except Exception as e:
+            return f'Exception: {e}'
+        
+        result = self.get_medicine_by_id(med_id)
+        if not result:
+            return 'Medicine deleted.'
+        else:
+            return 'Something went wrong. Medicine not deleted.'
