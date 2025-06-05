@@ -65,7 +65,7 @@ class MedicineDB(DatabaseHandler, Medicine):
     def print_medicine(self, medicine) -> None:
         pass
 
-    def add_medicine_to_database(self, med_name:str, dosage: str, quantity:int =0, description: str =None) -> str:
+    def add_medicine_to_database(self, med_name:str, dosage: str, quantity:int =0, description: str= None) -> str:
         """Adds medicine to database and returns string with statement."""
         self.cursor.execute("""
         INSERT INTO new_medicines (med_name, dosage, quantity, description)
