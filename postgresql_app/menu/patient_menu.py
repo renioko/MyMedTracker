@@ -68,6 +68,7 @@ class PatientMenu(Menu, PatientDB, Patient_Medicines_ViewDB, UserDB):
 
     def menu_view_patient_medicines(self): # nie działa
         self.view_patient_medicines_list()
+        # self.get_patient_medicine_view(pat_id=0)
 
     def menu_exit(self):
         print("Exiting patient menu")

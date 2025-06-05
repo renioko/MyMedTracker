@@ -101,6 +101,14 @@ class Patient_Medicines_View:
         # Tu mozna by dodac jakas logikę po inicjalizacji, np. formatowanie daty
         pass
 
+    def __str__(self):
+        return (f"""
+        PATIENT'S MEDICINES VIEW:
+        -pat_id- -first_name- -last_name- 
+        {self.pat_id :^8} {self.first_name :12} {self.last_name}
+        -med_id- -medicine_name----------- -last_issued- 
+        {self.med_id :^8} {self.med_name :25} {self.last_issued}""")
+
 @dataclass
 class User:
     user_id: int

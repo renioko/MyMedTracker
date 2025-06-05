@@ -78,8 +78,8 @@ class PatientDB(DatabaseHandler, Patient):
         patient_details = username, email, password_hash, role_id, first_name, last_name, emergency_contact, medical_info
         return patient_details
     
-    @classmethod # albo @staticmethod?
-    def get_pat_id_from_user_id(cls, self, user_id: int) -> int | None:
+
+    def get_pat_id_from_user_id(self, user_id: int) -> int | None:
         self.cursor.execute('''
         SELECT pat_id FROM new_patients
         WHERE user_id = %s ''', (user_id,))
@@ -116,7 +116,7 @@ class PatientDB(DatabaseHandler, Patient):
             VALUES (%s, %s)'''(user_id, emergency_contact, medical_info))
         except Exception as e:
             print(f'Error occurred while adding new patient: {e}.')()
-        pat_id = cls.get_pat_id_from_user_id(self, user_id)
+        pat_id = PatientDB.get_pat_id_from_user_id(self, user_id)
             # cls.print_patient(self, pat_id)
         added_patient_info = cls.print_patient(self,pat_id) # po zmianie przez verbose zwraca str
         result = f"Patient added. Patient details:\n {added_patient_info}"

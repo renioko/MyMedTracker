@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient medicines view - get user_id {% endblock %}
+
+{% block content %}
+
+<h1>Patient Medicines View:</h1>
+<h2>Enter your user_id</h2>
+<form method="POST" action="{{url_for('view_patient_medicines')}}">
+    <input type="number" name="user_id" Placeholder="User id: "><br>
+    <input type="submit" value="Submit"><br>
+</form>
+
+<a href="{{url_for('menu')}}">Back to menu</a>
+
+{% endblock %}

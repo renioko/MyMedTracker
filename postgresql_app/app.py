@@ -1,5 +1,7 @@
 from flask import  Flask, render_template, request
 from menu.patient_menu import PatientMenu
+from repos.patient_repo import PatientDB
+from repos.patient_medicine_view_repo import Patient_Medicines_ViewDB
 import os
 
 app = Flask(__name__, template_folder='UI/templates') # tworze instancje aplikacji,  tworzymy aplikację. __name__ mówi Flaskowi, gdzie szuka plików.
@@ -87,7 +89,28 @@ def delete_patient():
         return render_template("result.html", title="Delete patient", result=result)
     return render_template("get_patient_id_and_confirmation_to_delete_form.html")
 
+@app.route("/patient/view_patient_medicines", methods=["GET", "POST"])
+def view_patient_medicines():
+    if request.method == "POST":
+        user_id = (request.form.get("user_id"))
+        # pat_id = (request.form.get("pat_id"))
 
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return "incorrect user id."
+        patient_db = PatientDB()
+        pat_id = patient_db.get_pat_id_from_user_id(user_id)
+
+        if pat_id:
+            patient_medicines_view = Patient_Medicines_ViewDB()
+            patient_medicines_list = patient_medicines_view.get_patient_medicine_view(pat_id)
+            result = patient_medicines_view.format_medicines_for_web(patient_medicines_list)
+            return render_template("result.html", title="Patient medicines:", result=result)
+        else:
+            return "Patient not found."
+    return render_template("get_user_id_form.html") # zmienic forme by pacjent mógł podac tez pat_id
+        
 
 
 @app.route("/medicine")
