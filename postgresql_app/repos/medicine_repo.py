@@ -89,13 +89,13 @@ class MedicineDB(DatabaseHandler, Medicine):
             self.cursor.execute('''
             DELETE FROM new_medicines WHERE med_id = %s''', (med_id,))
             self.connection.commit()
-            # return 'Medicine deleted.'
+            return 'Medicine deleted.'
         
         except Exception as e:
             return f'Exception: {e}'
         
-        result = self.get_medicine_by_id(med_id)
-        if not result:
-            return 'Medicine deleted.'
-        else:
-            return 'Something went wrong. Medicine not deleted.'
+        # result = self.get_medicine_by_id(med_id)
+        # if not result:
+        #     return 'Medicine deleted.'
+        # else:
+        #     return 'Something went wrong. Medicine not deleted.'

@@ -24,4 +24,10 @@ def add_medicine():
 
 @medicine_bp.route("/delete_medicine", methods=["GET", "POST"])
 def delete_medicine():
-    pass
+    if request.method == "POST":
+        med_id = request.form.get("med_id")
+        medicine_db = MedicineDB()
+        result = medicine_db.delete_medicine(med_id)
+        return render_template("result.html", title="Deleting medicine", result=result)
+    return render_template("get_med_id_form.html")
+    pass # w trakcie
