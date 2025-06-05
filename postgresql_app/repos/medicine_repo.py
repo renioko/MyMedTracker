@@ -1,5 +1,6 @@
 from __future__ import annotations
 from collections import defaultdict
+from typing import List, Tuple, Any, Optional
 
 
 from dataclasses import dataclass
@@ -15,9 +16,47 @@ from database_connection import DatabaseHandler
 
 class MedicineDB(DatabaseHandler, Medicine):
     '''This class manages database operations and Medicine logic'''
-    def get_medicine_details(cls):
+    # def get_medicine_details(self, med_name: str =None) -> Tuple[int, str, str, int, str]:
+    def get_medicine(self, med_name: str =None) -> Medicine:
+        """Uses medicine name to search in database for given medicine and loads medicine id, name, dosage, quantity and description."""
+        if not med_name:
+            med_name = input('Enter medicine name:')
+        
+        try:
+            self.cursor.execute("""
+            SELECT med_id, med_name, dosage, quantity, description FROM new_medicines
+            WHERE med_name = %s""", (med_name,))
+            result = self.cursor.fetchone()
+            if result:
+                # med_id, med_name, dosage, quantity, description = result
+                medicine = Medicine(*result)
+                return medicine
+            else:
+                print('Medicine not found.')
+                return 'Medicine not found.'
+        except Exception as e:
+            print(f'Error occurred: {e}.')
+            return f'Error occurred: {e}.'
+
+
+    def load_medicines(self) -> list[Medicine]:
         pass
-    def load_medicines(cls, cursor) -> list[Medicine]:
+
+    def print_medicine(self, medicine) -> None:
         pass
-    def print_medicines(medicines) -> None:
-        pass
+    
+    def add_medicine_to_database(self, med_name:str, dosage: str, quantity:int =0, description: str =None) -> str:
+        """Adds medicine to database and returns string with statement."""
+        self.cursor.execute("""
+        INSERT INTO new_medicines (med_name, dosage, quantity, description)
+        VALUES (%s, %s, %s, %s)""", (med_name, dosage, quantity, description))
+
+        self.connection.commit()
+        print('Medicine added.')
+
+        medicine = self.get_medicine(med_name)
+        if medicine:
+            return f"Medicine added to database with id: {medicine.med_id}.\n {str(Medicine)}"
+        else:
+            return "Something is wrong. Medicine details could not be retrieved."
+        

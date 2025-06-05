@@ -10,7 +10,7 @@ patient_bp = Blueprint('patient', __name__, url_prefix='/patient')
 # def result():
 #     return render_template("result.html")
 
-@patient_bp.route("/patient")
+@patient_bp.route("/")
 def patient():
     return render_template("patient_menu.html")
 

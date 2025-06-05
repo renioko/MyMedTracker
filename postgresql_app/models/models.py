@@ -16,7 +16,7 @@ class Medicine:
     name: str
     dosage: str
     quantity: int
-    date: Optional[datetime.date] # data musi byc pobrana z view przez fk
+    # date: Optional[datetime.date] # data musi byc pobrana z view przez fk
     description: Optional[str] = None
 
    
@@ -25,18 +25,23 @@ class Medicine:
             self.dosage = ''
         if int(self.quantity) < 0:
             raise ValueError('ERROR! You entered a negative number.')
-        if self.date:
-            if isinstance(self.date, str):
-                self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
-            elif isinstance(self.date, datetime):
-                self.date = self.date.date()
-        else:
-            self.date = datetime.now().date()
+        # if self.date:
+        #     if isinstance(self.date, str):
+        #         self.date = datetime.strptime(self.date, '%Y-%m-%d').date()
+        #     elif isinstance(self.date, datetime):
+        #         self.date = self.date.date()
+        # else:
+        #     self.date = datetime.now().date()
         if self.description is None:
             self.description = ''
         
     def __str__(self):
-        return f"({self.med_id}, '{self.name}', '{self.dosage}', {self.quantity}, '{self.date.isoformat()}', '{self.description}')"
+        return f'''
+        Medicine_id: {self.med_id},
+        Medicine name:{self.name}, 
+        Dosage: {self.dosage}, 
+        Quantity: {self.quantity}, 
+        Description: '{self.description}'''
 
     def is_low(self) -> bool:
         return self.quantity <= 10 # nie dziala poprawnie

@@ -6,10 +6,20 @@ from models.models import Medicine
 
 medicine_bp = Blueprint('medicine', __name__, url_prefix='/medicine')
 
-medicine_bp.route("/medicine")
+@medicine_bp.route("/")
 def medicine():
-    render_template("medicine_menu.html")
+    return render_template("medicine_menu.html")
 
-medicine_bp.route("/medicine/add_medicine", methods=["GET", "POST"])
+@medicine_bp.route("/add_medicine", methods=["GET", "POST"])
 def add_medicine():
-    render_template("add_medicine_form.html")
+    if request.method == "POST":
+        med_name = request.form.get("med_name")
+        dosage = request.form.get("dosage")
+        quantity = request.form.get("quantity")
+        description = request.form.get("description")
+        medicine_db = MedicineDB()
+        result = medicine_db.add_medicine_to_database(med_name, dosage, quantity, description)
+        return render_template("result.html", title="Adding medicine", result=result)
+    return render_template("add_medicine_form.html")
+
+# @medicine_bp.route("")
