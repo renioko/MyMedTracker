@@ -3,7 +3,7 @@
 {% block title %} Adding patient form {% endblock%}
 
 {% block content %}
-<form method="POST" action="{{ url_for('add_patient') }}">
+<form method="POST" action="{{ url_for('patient.add_patient') }}">
     <input type="text" name="username" placeholder="Patient's username"><br>
     <input type="email" name="email" placeholder="Patient's email"><br>
     <input type="password" name="password" placeholder="Patient's password"><br>

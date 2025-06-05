@@ -3,7 +3,7 @@
 {% block title %} Patient id form {% endblock %}
 
 {% block content %}
-<form method="POST" action="{{ url_for('view_patient') }}">
+<form method="POST" action="{{ url_for('patient.view_patient') }}">
     <input type="number" name="pat_id" placeholder="Patient's id"><br>
 
     <input type="submit" value="Submit"><br>
