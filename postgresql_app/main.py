@@ -3,18 +3,18 @@ from repos.patient_medicine_view_repo import Patient_Medicines_ViewDB
 
 def main():
     menu = Menu(0, 0)
-    # menu.display_menu()
-    # menu_object = menu.choose_menu_object()
-    # menu.object_choice = menu_object
+    menu.display_menu()
+    menu_object = menu.choose_menu_object()
+    menu.object_choice = menu_object
 
-    # menu.display_options(menu_object)
-    # choice_option = menu.choose_option(menu_object)
-    # menu.activate_menu_child_class(menu_object, choice_option)
+    menu.display_options(menu_object)
+    choice_option = menu.choose_option(menu_object)
+    menu.activate_menu_child_class(menu_object, choice_option)
 
-    view = Patient_Medicines_ViewDB()
-    # view.view_patient_medicines_list()
-    record = view.get_patient_medicine_view(pat_id = 8)
-    print(record)
+    # view = Patient_Medicines_ViewDB()
+    # # view.view_patient_medicines_list()
+    # record = view.get_patient_medicine_view(pat_id = 8)
+    # print(record)
 
 if __name__ == '__main__':
     main()

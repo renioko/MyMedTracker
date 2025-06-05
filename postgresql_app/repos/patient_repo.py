@@ -280,8 +280,15 @@ class PatientDB(DatabaseHandler, Patient):
             return f'Error occurred while changing patient details: {e}'
 
 
-    def get_patient_view(self, pat_id: int) -> str:
+    def get_patient_view(self, pat_id: int = None) -> str:
         from models import Patient_View
+        if not pat_id:
+            pat_id = input('Enter patient_id: ')
+        try: 
+            pat_id = int(pat_id)
+        except ValueError:
+            print('Invalid id.')
+            return 'Invalid id.'
         self.cursor.execute('''
         SELECT * FROM patient_view WHERE pat_id = %s''', (pat_id,))
         result = self.cursor.fetchone()
@@ -290,7 +297,7 @@ class PatientDB(DatabaseHandler, Patient):
         else:
             print('Patient not found.')
             patient_view = 'Patient not found.'
-        # print(patient_view)
+        print(patient_view)
         return patient_view
 
 # print patient will not longer work. use print_patient_view instead

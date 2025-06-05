@@ -22,4 +22,6 @@ def add_medicine():
         return render_template("result.html", title="Adding medicine", result=result)
     return render_template("add_medicine_form.html")
 
-# @medicine_bp.route("")
+@medicine_bp.route("/delete_medicine", methods=["GET", "POST"])
+def delete_medicine():
+    pass
