@@ -1,17 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Deleting medicine {% endblock %}
+{% block title %} Medicine view {% endblock %}
 
 {% block content %}
 
-<h1>Deleting medicine</h1>
+<h1>Viewing medicine</h1>
 <h2>You are about to delete medicine</h2>
-<form method="POST" action="{{url_for('medicine.delete_medicine')}}">
-    <label>
-        <input type="checkbox" name="confirmation">
-        I want to delete medicine.
-    </label><br>
+<form method="POST" action="{{url_for('medicine.view_medicine')}}">
     <input type="number" name="med_id" Placeholder="Medicine id: "><br>
+    <input type="text" name="med_name" placeholder="Medicine name"><br>
     <input type="submit" value="Submit"><br>
 </form>
 

@@ -7,10 +7,10 @@
 <ul>
     <li><a href="{{ url_for('medicine.add_medicine') }}">Add medicine</a></li>
     <li><a href="{{ url_for('medicine.delete_medicine') }}">Delete medicine</a></li>
-    <li><a href="#">Update medicine</a></li>
-    <li><a href="#">View medicine</a></li>
+    <li><a href="{{ url_for('medicine.view_medicine') }}">View medicine</a></li>
+   {#<!-- <li><a href="#">Update medicine</a></li>
     <li><a href="#">Assign medicine</a></li>
-    <li><a href="#">View patients medicines list</a></li>
+    <li><a href="#">View patients medicines list</a></li> -->#}
 </ul>
 <a href="{{url_for('menu')}}">← Back to main menu</a>
 {% endblock %}

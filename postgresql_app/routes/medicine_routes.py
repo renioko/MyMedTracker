@@ -25,9 +25,36 @@ def add_medicine():
 @medicine_bp.route("/delete_medicine", methods=["GET", "POST"])
 def delete_medicine():
     if request.method == "POST":
+        confirmation = request.form.get("confirmation")
+        if not confirmation:
+            result = 'Medicine cannot be deleted without confirmation.'
+            return render_template("result.html", title="Deleting medicine", result=result)
         med_id = request.form.get("med_id")
+        med_name = request.form.get("med_name") # added
         medicine_db = MedicineDB()
+        if not med_id:
+            medicine = medicine_db.get_medicine(med_name)
+            try:
+                med_id = medicine.med_id
+            except AttributeError:
+                result = "Medicine not found."
         result = medicine_db.delete_medicine(med_id)
         return render_template("result.html", title="Deleting medicine", result=result)
-    return render_template("get_med_id_form.html")
+    return render_template("get_delete_med_id_and_name_form.html")
     pass # w trakcie
+
+@medicine_bp.route("/view_medicine", methods=["GET", "POST"])
+def view_medicine():
+    if request.method == "POST":
+        med_id = request.form.get("med_id")
+        med_name = request.form.get("med_name")
+        medicine_db = MedicineDB()
+        if not med_id:
+            medicine = medicine_db.get_medicine(med_name)
+        elif not med_name and med_id:
+            medicine = medicine_db.get_medicine_by_id(med_id)  
+        result = str(medicine)
+        return render_template("result.html", title="Medicine view", result=result)
+    return render_template("get_med_id_and_name_form.html")
+        
+        

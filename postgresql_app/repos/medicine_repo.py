@@ -33,7 +33,7 @@ class MedicineDB(DatabaseHandler, Medicine):
                 return medicine
             else:
                 print('Medicine not found.')
-                return 'Medicine not found.'
+                return None
         except Exception as e:
             print(f'Error occurred: {e}.')
             return f'Error occurred: {e}.'
@@ -63,7 +63,11 @@ class MedicineDB(DatabaseHandler, Medicine):
         pass
 
     def print_medicine(self, medicine) -> None:
-        pass
+        if medicine:
+            print(medicine)
+        else:
+            print('Medicine not found.')
+
 
     def add_medicine_to_database(self, med_name:str, dosage: str, quantity:int =0, description: str= None) -> str:
         """Adds medicine to database and returns string with statement."""
