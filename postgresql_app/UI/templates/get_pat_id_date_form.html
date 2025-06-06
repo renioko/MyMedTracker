@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Adding prescription {% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('prescription.add_prescription') }}">
+    <input type="number" name="pat_id" placeholder="Patient's id"><br>
+    <input  type="datetime" name="issue_date" placeholder="Issue date">
+
+    <input type="submit" value="Submit"><br>
+</form>
+
+
+    <a href="{{ url_for('menu') }}"> Back to menu </a>
+
+{% endblock %}

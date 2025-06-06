@@ -4,8 +4,12 @@ from routes.medicine_routes import medicine_bp
 from routes.prescription_routes import prescription_bp
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__, template_folder='UI/templates', static_folder='UI/static') # tworze instancje aplikacji,  tworzymy aplikację. __name__ mówi Flaskowi, gdzie szuka plików.
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
 app.register_blueprint(patient_bp)
 app.register_blueprint(medicine_bp)

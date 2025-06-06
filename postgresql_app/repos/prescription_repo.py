@@ -93,14 +93,14 @@ class PrescriptionDB(Prescription, DatabaseHandler):
 
         return pat_id, issue_date
     
-    def get_medicine_id_for_prescription(self) -> int|None:
-
-        medicine_name = input('Enter medicine name you are looking for: ')
+    def get_medicine_id_for_prescription(self, med_name=None) -> int|None:
+        if not med_name:
+            med_name = input('Enter medicine name you are looking for: ')
         try:
             self.cursor.execute('''
             SELECT med_id FROM new_medicines 
             WHERE med_name = %s
-            ''', (medicine_name,))
+            ''', (med_name,))
             result = self.cursor.fetchone()
             if result:
                 med_id = int(result[0])
@@ -139,14 +139,14 @@ class PrescriptionDB(Prescription, DatabaseHandler):
         print('Medicines added to prescription.')
 
     
-    def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> int:
+    def add_prescription_to_database(self, medicines_ids: list[int]=None, prescription_details: tuple[int, date]=None) -> str:
         '''creates new prescriptions in database by adding patient id and date of issue. Returns id of the new prescription.'''
 
         if not prescription_details:
             prescription_details = self.get_prescription_details()
 
         if prescription_details is None:
-            return  # Wyjście z metody, nie z całego programu
+            return  None# Wyjście z metody, nie z całego programu
         pat_id, issue_date = prescription_details
         print(f"Patient ID: {pat_id}, Date: {issue_date}")
 
@@ -174,7 +174,28 @@ class PrescriptionDB(Prescription, DatabaseHandler):
             medicines_ids = self.complete_list_of_medicines_id()
             print(f'medicines_ids: {medicines_ids}')
         self.add_medicines_to_prescription(presc_id, medicines_ids)
-        return presc_id 
+        return f'Prescription created with id: {presc_id}.'
     
+    def get_prescription_view(self, presc_id=None):
+        if not presc_id:
+            try:
+                presc_id = int(input('Enter prescription id: '))
+            except ValueError:
+                print('Incorrect id.')
+        
+        self.cursor.execute('''
+        SELECT * FROM prescription_view WHERE presc_id = %s''', (presc_id,))
+        result = self.cursor.fetchone()
+        if not result:
+            return ''
+
+        # Przykład czytelnego formatowania, zakładając że wiesz kolejność kolumn:
+        presc_id, issue_date, pat_id, user_id, first_name, last_name, med_name = result
+        return (f"Prescription ID: {presc_id}\n"
+                f"Issue date: {issue_date}\n"
+                f"Patient ID: {pat_id}\n"
+                f"User ID: {user_id}\n"
+                f"Patient name: {first_name} {last_name}\n"
+                f"Medicine Name: {med_name}\n")
 
     # dodac logike drukowania prescription, usuwania prescription itd

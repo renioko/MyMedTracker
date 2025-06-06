@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %} Adding medicine to prescription {% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('prescription.add_medicines_prescription') }}">
+    <label>Medicine name:</label>
+    <input type="text" name="med_name" placeholder="Medicine name"><br>
+    <label>No more medicines to add</label>
+    <input  type="checkbox" name="no_more_meds" placeholder="No more meds">
+
+    <input type="submit" value="Submit"><br>
+</form>
+
+
+    <a href="{{ url_for('menu') }}"> Back to menu </a>
+
+{% endblock %}

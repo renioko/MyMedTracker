@@ -5,12 +5,12 @@
 {% block content %}
 <h2> Functions for prescriptions:</h2>
 <ul>
-    <li><a href="#">Add prescription</a></li>
-    <li><a href="#">Delete prescription</a></li>
+    <li><a href="{{ url_for('prescription.add_prescription') }}">Add prescription</a></li>
+    <li><a href="{{ url_for('prescription.view_prescription') }}">View prescription</a></li>
+    {#<li><a href="#">Delete prescription</a></li>
     <li><a href="#">Update prescription</a></li>
-    <li><a href="#">View prescription</a></li>
     <li><a href="#">Assign prescription</a></li>
-    <li><a href="#">View patient medicines list</a></li>
+    <li><a href="#">View patient medicines list</a></li>#}
 </ul>
 <a href="{{url_for('menu')}}">← Back to main menu</a>
 {% endblock %}
