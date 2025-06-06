@@ -6,7 +6,8 @@
 
 - Add, update, and delete patient records
 - View list of medicines assigned to patients
-- Assign medicines to specific patients
+- Add, view and delete medicines from database
+- Assign medicines to specific patients via prescriptions
 - PostgreSQL database support
 - Web-based interface using Flask
 - Object-oriented architecture with clear class structure
@@ -32,7 +33,14 @@ MyMedTracker/
   │ ├── patient_medicine_view_repo.py
   │ ├── patient_repo.py
   │ ├── prescription_repo.py
+  │ ├── user_repo.py
   │
+  ├──routes/
+  │ ├── __init__.py
+  │ ├── medicine_routes.py
+  │ ├── patient_routes.py
+  │ ├── prescription_routes.py
+
   ├── UI/ # HTML templates and static files
   │ ├── templates/ # Jinja2 template files (e.g., base.html, menu.html)
   │ ├── static/ # JCSS template files (e.g.style.css)
@@ -56,21 +64,23 @@ MyMedTracker/
     <pre>
     pip install -r requirements.txt</pre>
 
-1. Run the application:
+3. Run the application (web version):
     <pre>
-    flask run      </pre>
+    python app.py   </pre>
+
+4. Running the application in CLI mode:
+   <pre>
+    python main.py  </pre>
 
 🧠 Requirements
    - Python 3.9+
-
    - PostgreSQL
-
    - Flask
-
    - psycopg2
+   - bcrypt
 
 📌 Project Status
-The project is under active development. Some features may still be in progress.
+The project is under development. Some features may still be in progress.
 
 📄 License
 This project is licensed under the MIT License.
