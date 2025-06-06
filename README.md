@@ -5,6 +5,7 @@
 ## 🔧 Features
 
 - Add, update, and delete patient records
+- Create users in database with validated email and hashed password
 - View list of medicines assigned to patients
 - Add, view and delete medicines from database
 - Assign medicines to specific patients via prescriptions
